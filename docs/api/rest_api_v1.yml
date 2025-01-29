@@ -989,6 +989,12 @@ paths:
         - Permissions
       security: 
         - JWT: []
+      parameters:
+        - name: permission_id
+          in: path
+          required: true 
+          schema: 
+            type: integer
       responses:
         200: 
           description: Успешно
