@@ -337,6 +337,12 @@ paths:
         - Room Groups
       security: 
         - JWT: []
+      parameters:
+        - name: group_id
+          in: path
+          required: true 
+          schema: 
+            type: integer
       responses:
         200: 
           description: Успешно
