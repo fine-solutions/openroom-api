@@ -1,0 +1,1344 @@
+openapi: 3.0.3
+info:
+  title: OpenRoom
+  version: v1.0
+
+
+
+tags:
+  - name: Reg-Auth
+    description: Регистрация и аутентификация
+  - name: Account
+    description: Работа со своим аккаунтом
+  - name: Units
+    description: Работа с корпусами предприятия
+  - name: Rooms
+    description: Работа с помещениями и корпусами
+  - name: Room Groups
+    description: Работа с группами помещений
+  - name: Events
+    description: Работа с мероприятиями
+  - name: Invites
+    description: Работа с приглашениями на мероприятия
+  - name: Registrations
+    description: Работа с заявками на участие в мероприятии
+  - name: Users
+    description: Работа с пользователями
+  - name: User Groups
+    description: Работа с группами пользователей
+  - name: Permissions
+    description: Работа с разрешениями пользователей
+  - name: Organization 
+    description: Работа с организацией
+
+
+
+paths:
+  /register:
+    post: 
+      summary: Создать аккаунт в системе
+      tags:
+        - Reg-Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        201:
+          description: Успешно
+
+  /login:
+    post:
+      summary: Войти в систему по логину и паролю (получить JWT токены)
+      tags:
+        - Reg-Auth
+      requestBody:
+        $ref: '#/components/requestBodies/LoginData'
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenSet'
+
+  /login/refresh:
+    post: 
+      summary: Обновить access token
+      tags:
+        - Reg-Auth
+      requestBody:
+        content:
+          application/json: 
+            schema: 
+              type: string
+              description: Refresh token
+      responses: 
+        200:
+          description: Успешно
+          content: 
+            application/json: 
+              schema: 
+                type: string
+                description: Access token
+
+  /account:
+    get:
+      summary: Получить данные своего аккаунта
+      tags: 
+        - Account
+      security: 
+        - JWT: []
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      summary: Изменить данные своего аккаунта
+      tags:
+        - Account
+      security: 
+        - JWT: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: Успешно
+ 
+  /units:
+    post: 
+      summary: Добавить в систему корпус организации
+      description: Корпус организации создаётся на основе svg-файла плана корпуса
+      tags:
+        - Units
+      security: 
+        - JWT: []
+      parameters: 
+        - name: unitName
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: unitDescription
+          in: query
+          required: false
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/octet-stream:
+            schema: 
+              type: string
+              format: binary
+      responses:
+        201:
+          description: Успешно
+    get:
+      summary: Получить список корпусов организации
+      tags:
+        - Units
+      security: 
+        - JWT: []
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/Unit'
+
+  /units/{unit_id}: 
+    get:
+      summary: Получить информацию о корпусе
+      tags:
+        - Units
+      security: 
+        - JWT: []
+      parameters: 
+        - name: unit_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Unit'
+    put:
+      summary: Изменить информацию о корпусе
+      tags:
+        - Units
+      security: 
+        - JWT: []
+      parameters: 
+        - name: unit_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody:
+        content: 
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Unit'
+      responses:
+        200:
+          description: Успешно
+
+  /rooms/{room_id}:
+    get: 
+      summary: Получить данные о помещении
+      tags:
+        - Rooms
+      security: 
+        - JWT: []
+      parameters: 
+        - name: room_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+            example: 345
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+    put:
+      summary: Изменить даные о аудитории
+      tags:
+        - Rooms
+      security: 
+        - JWT: []
+      parameters: 
+        - name: room_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+            example: 345
+      requestBody:
+        content: 
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Room'
+      responses:
+        200:
+          description: Успешно
+
+  /rooms/{room_id}/autoconfirm:
+    get: 
+      summary: Получить список пользователей, для которых настроенно автоподтверждение мероприятий
+      tags:
+        - Rooms
+      security: 
+        - JWT: []
+      parameters: 
+        - name: room_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+            example: 345
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                type: array 
+                items:
+                  $ref: '#/components/schemas/User'
+    put: 
+      summary: Изменить настройки автоподтверждения для помещения
+      tags:
+        - Rooms
+      security: 
+        - JWT: []
+      parameters: 
+        - name: room_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+            example: 345
+      requestBody: 
+        content: 
+          application/json:
+            schema: 
+              type: array 
+              description: Список ID пользователей, для которых заявки на бронирование будут одобряться автоматически
+              items: 
+                type: integer
+      responses:
+        200:
+          description: Успешно
+
+  /room-groups:
+    post: 
+      summary: Создать группу помещений
+      tags:
+        - Room Groups
+      security: 
+        - JWT: []
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/RoomGroup'
+      responses:
+        201: 
+          description: Успешно
+    get:
+      summary: Получить список групп помещений
+      description: В список попадают только публичные группы, а также группы, 
+        созданные текущим пользователем
+      tags:
+        - Room Groups
+      security: 
+        - JWT: []
+      parameters: 
+        - name: creatorId
+          in: query
+          required: false
+          description: ID создателя группы. Если оставить пустым, вернёт группы созданные всеми пользователями
+          schema: 
+            type: integer
+      responses:
+        200: 
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomGroup'
+
+  /room-groups/{group_id}: 
+    get: 
+      summary: Получить информацию о группе помещений
+      description: Можно получить информацию только опубличной группе,
+        либо группе, созданной текущим пользователем 
+      tags:
+        - Room Groups
+      security: 
+        - JWT: []
+      responses:
+        200: 
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/RoomGroup'
+    put: 
+      summary: Изменить группу помещений
+      tags:
+        - Room Groups
+      security: 
+        - JWT: []
+      parameters: 
+        - name: group_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody: 
+        content: 
+          application/json: 
+            schema: 
+              $ref: '#/components/schemas/RoomGroup'
+      responses:
+        200: 
+          description: Успешно
+    delete:
+      summary: Удалить группу помещений
+      tags:
+        - Room Groups
+      security: 
+        - JWT: []
+      parameters: 
+        - name: group_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses:
+        200: 
+          description: Успешно      
+
+  /events:
+    get:
+      summary: Получить список мероприятий
+      tags:
+        - Events
+      security: 
+        - JWT: []
+      parameters:
+        - name: count
+          in: query
+          required: false
+          description: 
+            Количество мероприятий в списке
+          schema: 
+            type: integer
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          description: 
+            Сдвиг от начала списка
+          schema: 
+            type: integer
+            default: 0
+        - name: free_entry
+          in: query
+          required: false
+          description: 
+            Только со свободным входом
+          schema: 
+            type: boolean
+            default: true
+        - name: organizer_id
+          in: query
+          required: false
+          description: 
+            Фильтр по ID организатора мероприятия
+          schema: 
+            type: integer
+        - name: status
+          in: query
+          required: false
+          description: Включая отменённые мероприятия
+          schema: 
+            type: array
+            default: true
+            items:
+              $ref: '#/components/schemas/EventStatus'
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+    post: 
+      summary: Запланировать мероприятие
+      description: Чтобы запланировать мероприятие, нужно обладать привелегиями администратора 
+        для этого помещения
+      tags:
+        - Events
+      security: 
+        - JWT: []
+      requestBody: 
+        content: 
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/Event'
+      responses:
+        201:
+          description: Успешно
+
+  /events/{event_id}:
+    get:
+      summary: Получить информацию о мероприятии
+      tags:
+        - Events
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Event'
+    delete: 
+      summary: Отменить мероприятие
+      description: Чтобы отменить мероприятие, нужно быть его организатором,
+        либо администратором соответствующей комнаты
+      tags:
+        - Events
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses:
+        200:
+          description: Успешно
+
+  /events/{event_id}/invites:
+    get: 
+      summary: Получить список приглашений на мероприятие
+      description: Получить список приглашений на указанное мероприятие. 
+        Доступно только Организатору мероприятия.
+      tags: 
+        - Events 
+        - Invites 
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses: 
+        200:
+          description: Успешно
+          content: 
+            application/json:
+              schema: 
+                type: array 
+                items: 
+                  $ref: '#/components/schemas/EventInvite'
+    post: 
+      summary: Пригласить пользователя на мероприятие
+      description: Пригласить пользователя на мероприятие может только организатор
+      tags:
+        - Events
+        - Invites 
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+        - name: user_id
+          in: query
+          required: true
+          schema: 
+            type: integer
+      responses: 
+        200:
+          description: Успешно
+
+  /events/{event_id}/registrations:
+    get: 
+      summary: Получить список заявок на посещение мероприятия
+      description: Получить список заявок на посещение указанного мероприятия. 
+        Доступно только Организатору мероприятия.
+      tags: 
+        - Events 
+        - Registrations
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses: 
+        200:
+          description: Успешно
+          content: 
+            application/json:
+              schema: 
+                type: array 
+                items: 
+                  $ref: '#/components/schemas/EventRegistration'
+    post: 
+      summary: Подать заявку на посещение мероприятия
+      tags:
+        - Events
+        - Registrations
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses: 
+        201:
+          description: Успешно
+
+  /events/requests:
+    get:
+      summary: Получить список запросов на бронирование
+      description: Возвращает список запросов на бронирование, которые должен 
+        рассмотреть текущий пользователь (в соответствии с тем, какие помещения
+        находятся под его управлением)
+      tags:
+        - Events
+      security: 
+        - JWT: []
+      parameters:
+        - name: count
+          in: query
+          required: false
+          description: Количество запросов в списке
+          schema: 
+            type: integer
+            maximum: 100
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          description: Смещение от начала списка
+          schema: 
+            type: integer
+            default: 0
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+
+  /events/{event_id}/decision:
+    put:
+      summary: Ответить на запрос
+      description: Принять решение по запросу на проведение мероприятия.
+        Может использоваться только Администратором
+      tags:
+        - Events
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+        - name: decision
+          in: query
+          required: true
+          description: Решение по мероприятию
+          schema: 
+            type: string
+            enum: 
+              - Confirm
+              - Reject
+      responses:
+        200:
+          description: Успешно
+
+  /invites: 
+    get:
+      summary: Получить список приглашений на мероприятия
+      description: Список приглашений не мероприятие, 
+        полученных на имя текущего пользователя
+      tags:
+        - Invites
+      security: 
+        - JWT: []
+      parameters:
+        - name: status
+          in: query
+          required: true
+          schema: 
+            $ref: '#/components/schemas/EventInviteStatus'
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: '#/components/schemas/EventInvite'
+
+  /invites/{event_id}/answer:
+    put:
+      summary: Ответить на приглашение
+      tags:
+        - Invites
+      security: 
+        - JWT: []
+      parameters: 
+        - name: event_id
+          in: path
+          required: true 
+          schema: 
+            type: integer
+        - name: decision 
+          in: query 
+          required: true 
+          description: Решение о посещении мероприятие
+          schema: 
+            type: string 
+            enum: 
+              - Confirm 
+              - Reject
+      responses:
+        200:
+          description: Успешно
+
+  /registrations:
+    get:
+      summary: Получить список исходящих запросов на посещение мероприятий
+      tags:
+        - Registrations
+      security: 
+        - JWT: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Фильтрация по стутусу запроса
+          schema: 
+            $ref: '#/components/schemas/EventRegistrationStatus'
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: '#/components/schemas/EventRegistration'
+
+  /registrations/{event_id}/{user_id}:
+    put:
+      summary: Обработать заявку на посещение мероприятия
+      description: Принять или отклонить заявку на посещение мероприятия пользователем. 
+        Используется Организатором мероприятия.
+      tags:
+        - Registrations
+      security: 
+        - JWT: []
+      parameters:
+        - name: event_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+        - name: user_id
+          in: path
+          required: true 
+          schema: 
+            type: integer
+        - name: decision
+          in: query 
+          required: true 
+          description: Решение по заявке
+          schema: 
+            type: string 
+            enum: 
+              - Confirm 
+              - Reject
+      responses: 
+        200: 
+          description: Успешно
+
+  /users/{user_id}:
+    get:
+      summary: Получить информацию о пользователе
+      tags:
+        - Users
+      security: 
+        - JWT: []
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses:
+        200:
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      summary: Удалить пользователя
+      description: Чтобы удалить пользователя, нужно быть владельцем системы либо
+        обладать разрешением на удаление пользователей
+      tags:
+        - Users
+      security: 
+        - JWT: []
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      responses:
+        200:
+          description: Успешно
+
+  /users/{user_id}/permissions:
+    put: 
+      summary: Изменить права пользователя
+      tags: 
+        - Users
+      security: 
+        - JWT: []
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody: 
+        content: 
+          application/json: 
+            schema: 
+              type: array
+              description: Список ID разрешений пользователя
+              items: 
+                type: integer
+      responses:
+        200:
+          description: Успешно
+
+  /users/{user_id}/available_rooms:
+    put: 
+      summary: Изменить список доступных пользователю помещений
+      tags: 
+        - Users
+      security: 
+        - JWT: []
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody: 
+        content: 
+          application/json: 
+            schema: 
+              type: array
+              description: Список ID помещений, доступных пользователю
+              items: 
+                type: integer
+      responses:
+        200:
+          description: Успешно
+
+  /users/{user_id}/admined_rooms:
+    put: 
+      summary: Изменить список помещений, управляемых пользователем
+      tags: 
+        - Users
+      security: 
+        - JWT: []
+      parameters: 
+        - name: user_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody: 
+        content: 
+          application/json: 
+            schema: 
+              type: array
+              description: Список ID помещений, управляемых пользователем
+              items: 
+                type: integer
+      responses:
+        200:
+          description: Успешно
+
+  /user-groups:
+    post: 
+      summary: Создать группу пользователей
+      tags:
+        - User Groups
+      security: 
+        - JWT: []
+      requestBody:
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/UserGroup'
+      responses:
+        201: 
+          description: Успешно
+    get:
+      summary: Получить список групп пользователей
+      tags:
+        - User Groups
+      security: 
+        - JWT: []
+      parameters: 
+        - name: creator_id
+          in: query
+          required: false
+          description: ID создателя группы. Если оставить пустым, вернёт группы созданные всеми пользователями
+          schema: 
+            type: integer
+      responses:
+        200: 
+          description: Успешно
+          content:
+            application/json:
+              schema: 
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserGroup'
+
+  /user-groups/{group_id}:
+    get: 
+      summary: Получить информацию о группе пользователей
+      tags:
+        - User Groups
+      security: 
+        - JWT: []
+      parameters: 
+        - name: group_id
+          in: path
+          required: true
+          description: ID группы
+          schema: 
+            type: integer
+      responses: 
+        200: 
+          description: Успешно
+          content: 
+            application/json: 
+              schema: 
+                $ref: '#/components/schemas/UserGroup'
+    put:
+      summary: Изменить группу пользователей
+      tags:
+        - User Groups
+      security: 
+        - JWT: []
+      parameters: 
+        - name: group_id
+          in: path
+          required: true
+          description: ID группы
+          schema: 
+            type: integer
+      requestBody: 
+        content: 
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/UserGroup'
+      responses:
+        200: 
+          description: Успешно
+    delete:
+      summary: Удалить группу пользователей
+      tags:
+        - User Groups
+      security: 
+        - JWT: []
+      parameters: 
+        - name: group_id
+          in: path
+          required: true
+          description: ID группы
+          schema: 
+            type: integer
+      responses:
+        200: 
+          description: Успешно
+
+  /permissions: 
+    get: 
+      summary: Получить список существующих разрешений пользователей
+      tags:
+        - Permissions
+      security: 
+        - JWT: []
+      responses:
+        200: 
+          description: Успешно
+          content: 
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  $ref: '#/components/schemas/ExtraPermission'
+
+  /permissions/{permission_id}: 
+    get: 
+      summary: Получить информацию о указанном разрешении
+      tags:
+        - Permissions
+      security: 
+        - JWT: []
+      responses:
+        200: 
+          description: Успешно
+          content: 
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/ExtraPermission'
+
+  /organization: 
+    get: 
+      summary: Получить информацию об организации
+      tags:
+        - Organization
+      security: 
+        - JWT: []
+      responses: 
+        200: 
+          description: Успешно
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+
+
+
+components:
+  schemas:
+    User:
+      type: object
+      description: 
+        Информация о пользователе
+      properties:
+        userID: 
+          type: integer
+          example: 234
+          readOnly: true
+        userName:
+          type: string
+          example: Вова
+        userDescription: 
+          type: string
+          example: Студент 4 курса
+          description: Дополнительная информация
+        registerAt: 
+          type: string
+          format: date-time
+          readOnly: true
+        email:
+          type: string
+          format: email
+          writeOnly: true
+        password:
+          type: string
+          example: sUp3rPassworD
+          writeOnly: true
+        availableRoomIDs:
+          type: array
+          readOnly: true
+          items:
+            type: integer
+        adminedRoomIDs:
+          type: array
+          readOnly: true
+          items:
+            type: integer
+        extraPermissionsIDs:
+          type: array
+          readOnly: true
+          items:
+            type: integer
+
+    ExtraPermission: 
+      type: object
+      description: 
+        Разрешение для пользователя
+      properties: 
+        permissionID:
+          type: integer
+          readOnly: true
+          example: 12
+        permissionName:
+          type: string
+          readOnly: true
+          example: 
+            Создание публицных групп пользователей
+        permissionDescription:
+          type: string
+          readOnly: true
+          example: 
+            Позволяет пользователю создавать группы пользователей, которые видны всем
+
+    UserGroup: 
+      type: object
+      description: 
+        Информация о группе пользователей
+      properties: 
+        groupID:
+          type: integer
+          example: 734
+          readOnly: true
+        groupName: 
+          type: string
+          example: ИВТ 4 курс
+        groupDescription: 
+          type: string
+        userIDs: 
+          type: array
+          description: Список ID пользователей, состоящих в группе
+          items:
+            type: integer
+        creatorID:
+          type: integer
+          readOnly: true
+          description: ID пользователя, создавшего группу
+        public:
+          type: boolean
+          description: Доступна ли эта группа для просмотра другими пользователями
+
+    Room:
+      type: object
+      description: 
+        Информация о помещении
+      properties:
+        roomID:
+          type: integer
+          example: 345
+          readOnly: true
+        roomName:
+          type: string
+          example: Аудитория №406
+        roomDescription:
+          type: string
+          description: Дополнительная информация
+        floorLevel:
+          readOnly: true
+          type: integer
+          example: 2
+          description: Порядковый номер этажа
+        unitID:
+          readOnly: true
+          type: integer
+          example: 1
+          description: 
+            ID корпуса, в котором находится помещение
+
+    RoomGroup:
+      type: object
+      description: 
+        Информация о группе помещений
+      properties:
+        groupID:
+          readOnly: true
+          type: integer
+          example: 936
+        groupName:
+          type: string
+          example: Радиофизика
+        groupDescription: 
+          type: string
+          example: Аудитории кафедры радиофизики
+        roomIDs:
+          type: array
+          description: ID помещений, состоящих в группе
+          items:
+            type: integer
+            example: 345
+        creatorID:
+          type: integer
+          readOnly: true
+          description: ID пользователя, создавшего группу
+        public: 
+          type: boolean
+          description: 
+            Доступна ли группа для использования другими пользователями
+
+    Unit:
+      type: object
+      description: 
+        Информация о корпусе организации
+      properties:
+        unitID:
+          type: integer
+          example: 567
+          readOnly: true
+        unitName:
+          type: string
+          example: Главный корпус
+        unitDescription:
+          type: string
+          description: Дополнительная информация
+        roomIDs: 
+          readOnly: true
+          type: array
+          description: ID помещений, находящихся в этом корпусе
+          items: 
+            type: integer
+            example: 345
+        schema: 
+          readOnly: true
+          type: string
+          format: url
+          example: https://organization.info/unit1.svg
+          description: Ссылка на svg-план корпуса
+
+    Event:
+      type: object
+      description: 
+        Информация о мероприятии
+      properties:
+        eventID:
+          type: integer
+          example: 678
+          readOnly: true
+        eventName:
+          type: string
+          example: Лекция по разработке на Java
+        eventDescription:
+          type: string
+          description: Дополнительная информация о мероприятии
+        organizerID:
+          readOnly: true
+          type: integer
+          example: 123
+          description: ID пользователя, организовавшего мероприятие
+        roomID:
+          type: integer
+          example: 345
+          description: ID помещения, в котором планируется мероприятие
+        startsAt:
+          type: string
+          format: date-time
+          description: Время начала мероприятия
+        endsAt:
+          type: string
+          format: date-time
+          description: Время окончания мероприятия
+        isClosedEvent:
+          type: boolean
+          description: 
+            Формат мероприятия (Открытое/Закрытое).
+            На закрытое мероприятие могут прийти только приглашённые пользователи
+        freeEntry:
+          type: boolean
+          description: 
+            Свободный ли вход на мероприятие. Если вход свободный, регистрироваться на мероприятие не нужно.
+        status:
+          readOnly: true
+          $ref: '#/components/schemas/EventStatus'
+
+    EventStatus:
+      type: string 
+      description: 
+        Статус мероприятия
+      enum: 
+        - Unconfirmed
+        - Confirmed
+        - Rejected
+        - Cancelled
+        - Finished
+
+    EventInvite: 
+      type: object
+      description: 
+        Приглашение на мероприятие
+      properties:
+        eventID: 
+          type: integer
+          readOnly: true
+        userID: 
+          type: integer
+          description: ID приглашённого пользователя
+        status: 
+          $ref: '#/components/schemas/EventInviteStatus'
+
+    EventInviteStatus: 
+      type: string
+      description: 
+        Статус приглашения на мероприятие
+      enum: 
+        - Waiting
+        - Accepted
+        - Cancelled
+
+    EventRegistration:
+      type: object
+      description: 
+        Заявка на посещение мероприятия
+      properties: 
+        eventID: 
+          type: integer
+        userID: 
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/EventRegistrationStatus'
+
+    EventRegistrationStatus: 
+      type: string
+      description: 
+        Статус заявки на посещение мероприятия
+      enum: 
+        - Waiting
+        - Confirmed
+        - Rejected
+
+    Organization:
+      type: object
+      description: 
+        Инфорамция об организации
+      properties: 
+        organizationName: 
+          type: string
+          example: Воронежский Государственный Университет
+        organizationDescription: 
+          type: string 
+        isOpen: 
+          type: boolean 
+          description: 
+            Открытая ли организация (разрешена ли регистрация сторонним пользователям)
+          example: false
+
+    TokenSet:
+      type: object
+      description: Пара из access и refresh токенов 
+      properties:
+        accessToken: 
+          type: string
+        refreshToken: 
+          type: string
+
+
+
+  requestBodies:
+    LoginData:
+      content:
+        application/json:
+          schema: 
+            type: object
+            properties:
+              email: 
+                type: string
+                format: email
+              password: 
+                type: string
+                example: SuPerPassWord
+
+
+
+  securitySchemes:
+    JWT:
+      type: apiKey
+      name: token
+      in: cookie
