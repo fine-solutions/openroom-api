@@ -197,6 +197,30 @@ paths:
         200:
           description: Успешно
 
+  /units/{unit_id}/floors:
+    get: 
+      summary: Получить список этажей корпуса
+      tags:
+        - Units
+      security: 
+        - JWT: []
+      parameters: 
+        - name: unit_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+      requestBody:
+        content: 
+          application/json:
+            schema: 
+              type: array 
+              items:
+                $ref: '#/components/schemas/Floor'
+      responses:
+        200:
+          description: Успешно
+
   /rooms/{room_id}:
     get: 
       summary: Получить данные о помещении
@@ -1061,16 +1085,22 @@ components:
           readOnly: true
           items:
             type: integer
+          description: 
+            ID помещений, доступных пользователю для бронирования
         adminedRoomIDs:
           type: array
           readOnly: true
           items:
             type: integer
+          description: 
+            ID помещений, даминистратором которых является пользователь
         extraPermissionsIDs:
           type: array
           readOnly: true
           items:
             type: integer
+          description: 
+            Особые права пользователя
 
     ExtraPermission: 
       type: object
@@ -1085,7 +1115,7 @@ components:
           type: string
           readOnly: true
           example: 
-            Создание публицных групп пользователей
+            Создание публичных групп пользователей
         permissionDescription:
           type: string
           readOnly: true
@@ -1119,6 +1149,22 @@ components:
           type: boolean
           description: Доступна ли эта группа для просмотра другими пользователями
 
+    Floor: 
+      type: object
+      description: 
+        Инфорамция об этаже
+      properties: 
+        floorID:
+          type: integer
+        floorSequence: 
+          type: integer
+          description: 
+            Порядковый номер этажа
+        floorName: 
+          type: string
+          description: 
+            Название этажа
+
     Room:
       type: object
       description: 
@@ -1134,11 +1180,10 @@ components:
         roomDescription:
           type: string
           description: Дополнительная информация
-        floorLevel:
-          readOnly: true
-          type: integer
-          example: 2
-          description: Порядковый номер этажа
+        floorID: 
+          type: integer 
+          description: 
+            ID этажа, на котором находится помещение
         unitID:
           readOnly: true
           type: integer
