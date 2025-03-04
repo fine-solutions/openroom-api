@@ -1056,6 +1056,12 @@ components:
       type: object
       description: 
         Информация о пользователе
+      required: 
+        - userID 
+        - userName 
+        - email 
+        - password 
+        - registerAt 
       properties:
         userID: 
           type: integer
@@ -1106,6 +1112,10 @@ components:
       type: object
       description: 
         Разрешение для пользователя
+      required:
+        - permissionID 
+        - permissionName 
+        - permissionDescription
       properties: 
         permissionID:
           type: integer
@@ -1126,6 +1136,11 @@ components:
       type: object
       description: 
         Информация о группе пользователей
+      required: 
+        - groupID 
+        - groupName 
+        - creatorID 
+        - public
       properties: 
         groupID:
           type: integer
@@ -1153,6 +1168,9 @@ components:
       type: object
       description: 
         Инфорамция об этаже
+      required:
+        - floorID 
+        - floorSequence 
       properties: 
         floorID:
           type: integer
@@ -1169,6 +1187,11 @@ components:
       type: object
       description: 
         Информация о помещении
+      required:
+        - roomID 
+        - roomName 
+        - floorID 
+        - unitID
       properties:
         roomID:
           type: integer
@@ -1195,6 +1218,11 @@ components:
       type: object
       description: 
         Информация о группе помещений
+      required:
+        - groupID 
+        - groupName
+        - creatorID
+        - public
       properties:
         groupID:
           readOnly: true
@@ -1225,6 +1253,10 @@ components:
       type: object
       description: 
         Информация о корпусе организации
+      required:
+        - unitID
+        - unitName
+        - schema
       properties:
         unitID:
           type: integer
@@ -1254,6 +1286,16 @@ components:
       type: object
       description: 
         Информация о мероприятии
+      required:
+        - eventID 
+        - eventName 
+        - organizerID 
+        - roomID 
+        - startsAt 
+        - endsAt 
+        - isClosedEvent
+        - freeEntry 
+        - status
       properties:
         eventID:
           type: integer
@@ -1310,6 +1352,10 @@ components:
       type: object
       description: 
         Приглашение на мероприятие
+      required:
+        - eventID 
+        - userID 
+        - status
       properties:
         eventID: 
           type: integer
@@ -1333,6 +1379,10 @@ components:
       type: object
       description: 
         Заявка на посещение мероприятия
+      required:
+        - eventID 
+        - userID 
+        - status
       properties: 
         eventID: 
           type: integer
@@ -1355,6 +1405,9 @@ components:
       type: object
       description: 
         Инфорамция об организации
+      required:
+        - organizationName
+        - isOpen
       properties: 
         organizationName: 
           type: string
@@ -1370,6 +1423,9 @@ components:
     TokenSet:
       type: object
       description: Пара из access и refresh токенов 
+      required:
+        - accessToken
+        - refreshToken
       properties:
         accessToken: 
           type: string
@@ -1384,6 +1440,9 @@ components:
         application/json:
           schema: 
             type: object
+            required:
+              - email
+              - password
             properties:
               email: 
                 type: string
