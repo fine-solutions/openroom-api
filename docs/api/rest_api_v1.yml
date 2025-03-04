@@ -450,10 +450,18 @@ paths:
             Фильтр по ID организатора мероприятия
           schema: 
             type: integer
+        - name: room_id 
+          in: query
+          required: false
+          description: 
+            ID помещения, в котором проводятся мероприятия
+          schema: 
+            type: integer
         - name: status
           in: query
           required: false
-          description: Включая отменённые мероприятия
+          description: 
+            Если не указывать этот параметр, возвращаются мероприятия с любым статусом
           schema: 
             type: array
             default: true
@@ -669,10 +677,7 @@ paths:
           required: true
           description: Решение по мероприятию
           schema: 
-            type: string
-            enum: 
-              - Confirm
-              - Reject
+            $ref: '#/components/schemas/Decision'
       responses:
         200:
           description: Успешно
@@ -720,10 +725,7 @@ paths:
           required: true 
           description: Решение о посещении мероприятие
           schema: 
-            type: string 
-            enum: 
-              - Confirm 
-              - Reject
+            $ref: '#/components/schemas/Decision'
       responses:
         200:
           description: Успешно
@@ -777,10 +779,7 @@ paths:
           required: true 
           description: Решение по заявке
           schema: 
-            type: string 
-            enum: 
-              - Confirm 
-              - Reject
+            $ref: '#/components/schemas/Decision'
       responses: 
         200: 
           description: Успешно
@@ -1275,10 +1274,14 @@ components:
           items: 
             type: integer
             example: 345
+        floorIDs:
+          readOnly: true 
+          type: array
+          items: 
+            $ref: '#/components/schemas/Floor'
         schema: 
           readOnly: true
           type: string
-          format: url
           example: https://organization.info/unit1.svg
           description: Ссылка на svg-план корпуса
 
@@ -1400,6 +1403,12 @@ components:
         - Waiting
         - Confirmed
         - Rejected
+
+    Decision: 
+      type: string 
+      enum: 
+        - Confirm
+        - Reject
 
     Organization:
       type: object
