@@ -2,7 +2,16 @@ from typing import Optional
 
 from fastapi import APIRouter
 
-from api.models import User, TokenSet, LoginPostRequest
+
+from core.usecases import RegUser
+from adapters import DBAuthCRUD, DBUserCrud
+from api.models import FullUser, RegUserData, TokenSet, LoginPostRequest
+from database import DBManager
+
+from config import conf
+
+
+RegUser.set_dependencies(user_crud=DBUserCrud, auth_crud=DBAuthCRUD)
 
 
 
@@ -15,9 +24,9 @@ account_router = APIRouter(
 @account_router.get(
     '/account',
     response_model=None,
-    responses={'200': {'model': User}}
+    responses={'200': {'model': FullUser}}
 )
-def get_account() -> Optional[User]:
+async def get_account() -> Optional[FullUser]:
     """
     Получить данные своего аккаунта
     """
@@ -25,7 +34,7 @@ def get_account() -> Optional[User]:
 
 
 @account_router.put('/account', response_model=None)
-def put_account(body: User = None) -> None:
+async def put_account(body: RegUserData = None) -> None:
     """
     Изменить данные своего аккаунта
     """
@@ -37,7 +46,7 @@ def put_account(body: User = None) -> None:
     response_model=None,
     responses={'200': {'model': TokenSet}}
 )
-def post_login(body: LoginPostRequest = None) -> Optional[TokenSet]:
+async def post_login(body: LoginPostRequest = None) -> Optional[TokenSet]:
     """
     Войти в систему по логину и паролю (получить JWT токены)
     """
@@ -49,7 +58,7 @@ def post_login(body: LoginPostRequest = None) -> Optional[TokenSet]:
     response_model=None,
     responses={'200': {'model': str}}
 )
-def post_login_refresh(body: str = None) -> Optional[str]:
+async def post_login_refresh(body: str = None) -> Optional[str]:
     """
     Обновить access token
     """
@@ -57,8 +66,17 @@ def post_login_refresh(body: str = None) -> Optional[str]:
 
 
 @account_router.post('/register', response_model=None)
-def post_register(body: User = None) -> None:
+async def post_register(body: RegUserData = None) -> None:
     """
     Создать аккаунт в системе
     """
-    pass
+    uc = RegUser(
+        userName=body.userName,
+        email=body.email,
+        password=body.password,
+        userDescription=body.userDescription
+    )
+
+    print(await uc.execute())
+
+    return 

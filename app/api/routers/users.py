@@ -3,13 +3,19 @@ from typing import Optional
 from pydantic import conint
 from fastapi import APIRouter
 
+from core.usecases import GetUser
+from adapters import DBUserCrud
 from api.models import (
-    User,
+    FullUser,
     UsersUserIdAdminedRoomsPutRequest,
     UsersUserIdAvailableRoomsPutRequest,
     UsersUserIdPermissionsPutRequest
     )
 
+from config import conf
+
+
+GetUser.set_dependencies(user_crud=DBUserCrud)
 
 
 users_router = APIRouter(
@@ -22,16 +28,18 @@ users_router = APIRouter(
 @users_router.get(
     '/{user_id}',
     response_model=None,
-    responses={'200': {'model': User}})
-def get_users_user_id(user_id: int) -> Optional[User]:
+    responses={'200': {'model': FullUser}})
+async def get_users_user_id(user_id: int) -> Optional[FullUser]:
     """
     Получить информацию о пользователе
     """
-    pass
+    uc = GetUser(userID=user_id)
+
+    return await uc.execute()
 
 
 @users_router.delete('/{user_id}', response_model=None)
-def delete_users_user_id(user_id: int) -> None:
+async def delete_users_user_id(user_id: int) -> None:
     """
     Удалить пользователя
     """
@@ -39,7 +47,7 @@ def delete_users_user_id(user_id: int) -> None:
 
 
 @users_router.put('/{user_id}/admined_rooms', response_model=None)
-def put_users_user_id_admined_rooms(
+async def put_users_user_id_admined_rooms(
     user_id: int, body: UsersUserIdAdminedRoomsPutRequest = None
 ) -> None:
     """
@@ -49,7 +57,7 @@ def put_users_user_id_admined_rooms(
 
 
 @users_router.put('/{user_id}/available_rooms', response_model=None)
-def put_users_user_id_available_rooms(
+async def put_users_user_id_available_rooms(
     user_id: int, body: UsersUserIdAvailableRoomsPutRequest = None
 ) -> None:
     """
@@ -59,7 +67,7 @@ def put_users_user_id_available_rooms(
 
 
 @users_router.put('/{user_id}/permissions', response_model=None)
-def put_users_user_id_permissions(
+async def put_users_user_id_permissions(
     user_id: int, body: UsersUserIdPermissionsPutRequest = None
 ) -> None:
     """

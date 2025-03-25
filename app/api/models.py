@@ -15,15 +15,21 @@ from pydantic import AwareDatetime, BaseModel, EmailStr, Field, RootModel
 ########## Base models
 #######################
 
-class User(BaseModel):
-    userID: int = Field(..., examples=[234])
+class BaseUser(BaseModel):
     userName: str = Field(..., examples=['Вова'])
     userDescription: Optional[str] = Field(
         None, description='Дополнительная информация', examples=['Студент 4 курса']
     )
-    registerAt: AwareDatetime
+
+
+class RegUserData(BaseUser):
     email: EmailStr
     password: str = Field(..., examples=['sUp3rPassworD'])
+
+
+class FullUser(BaseUser):
+    userID: int = Field(..., examples=[234])
+    registerAt: AwareDatetime
     availableRoomIDs: Optional[List[int]] = Field(
         None, description='ID помещений, доступных пользователю для бронирования'
     )
@@ -48,17 +54,20 @@ class ExtraPermission(BaseModel):
     )
 
 
-class UserGroup(BaseModel):
-    groupID: int = Field(..., examples=[734])
+class BaseUserGroup(BaseModel):
     groupName: str = Field(..., examples=['ИВТ 4 курс'])
     groupDescription: Optional[str] = None
     userIDs: Optional[List[int]] = Field(
         None, description='Список ID пользователей, состоящих в группе'
     )
-    creatorID: int = Field(..., description='ID пользователя, создавшего группу')
     public: bool = Field(
         ..., description='Доступна ли эта группа для просмотра другими пользователями'
     )
+
+
+class FullUserGroup(BaseUserGroup):
+    groupID: int = Field(..., examples=[734])
+    creatorID: int = Field(..., description='ID пользователя, создавшего группу')
 
 
 class Floor(BaseModel):
@@ -67,20 +76,22 @@ class Floor(BaseModel):
     floorName: Optional[str] = Field(None, description='Название этажа')
 
 
-class Room(BaseModel):
-    roomID: int = Field(..., examples=[345])
+class BaseRoom(BaseModel):
     roomName: str = Field(..., examples=['Аудитория №406'])
     roomDescription: Optional[str] = Field(
         None, description='Дополнительная информация'
     )
+
+
+class FullRoom(BaseRoom):
+    roomID: int = Field(..., examples=[345])
     floorID: int = Field(..., description='ID этажа, на котором находится помещение')
     unitID: int = Field(
         ..., description='ID корпуса, в котором находится помещение', examples=[1]
     )
 
 
-class RoomGroup(BaseModel):
-    groupID: int = Field(..., examples=[936])
+class BaseRoomGroup(BaseModel):
     groupName: str = Field(..., examples=['Радиофизика'])
     groupDescription: Optional[str] = Field(
         None, examples=['Аудитории кафедры радиофизики']
@@ -88,18 +99,25 @@ class RoomGroup(BaseModel):
     roomIDs: Optional[List[int]] = Field(
         None, description='ID помещений, состоящих в группе'
     )
-    creatorID: int = Field(..., description='ID пользователя, создавшего группу')
     public: bool = Field(
         ..., description='Доступна ли группа для использования другими пользователями'
     )
 
 
-class Unit(BaseModel):
-    unitID: int = Field(..., examples=[567])
+class FullRoomGroup(BaseRoomGroup):
+    groupID: int = Field(..., examples=[936])
+    creatorID: int = Field(..., description='ID пользователя, создавшего группу')
+
+
+class BaseUnit(BaseModel):
     unitName: str = Field(..., examples=['Главный корпус'])
     unitDescription: Optional[str] = Field(
         None, description='Дополнительная информация'
     )
+
+
+class FullUnit(BaseUnit):
+    unitID: int = Field(..., examples=[567])
     roomIDs: Optional[List[int]] = Field(
         None, description='ID помещений, находящихся в этом корпусе'
     )
@@ -149,14 +167,10 @@ class Organization(BaseModel):
     )
 
 
-class Event(BaseModel):
-    eventID: int = Field(..., examples=[678])
+class BaseEvent(BaseModel):
     eventName: str = Field(..., examples=['Лекция по разработке на Java'])
     eventDescription: Optional[str] = Field(
         None, description='Дополнительная информация о мероприятии'
-    )
-    organizerID: int = Field(
-        ..., description='ID пользователя, организовавшего мероприятие', examples=[123]
     )
     roomID: int = Field(
         ...,
@@ -172,6 +186,13 @@ class Event(BaseModel):
     freeEntry: bool = Field(
         ...,
         description='Свободный ли вход на мероприятие. Если вход свободный, регистрироваться на мероприятие не нужно.',
+    )
+
+
+class FullEvent(BaseEvent):
+    eventID: int = Field(..., examples=[678])
+    organizerID: int = Field(
+        ..., description='ID пользователя, организовавшего мероприятие', examples=[123]
     )
     status: EventStatus
 
@@ -239,20 +260,20 @@ class UsersUserIdAdminedRoomsPutRequest(RootModel[List[int]]):
 ############ Responses
 #######################################
 
-class UserGroupsGetResponse(RootModel[List[UserGroup]]):
-    root: List[UserGroup]
+class UserGroupsGetResponse(RootModel[List[FullUserGroup]]):
+    root: List[FullUserGroup]
 
 
 class PermissionsGetResponse(RootModel[List[ExtraPermission]]):
     root: List[ExtraPermission]
 
 
-class UnitsGetResponse(RootModel[List[Unit]]):
-    root: List[Unit]
+class UnitsGetResponse(RootModel[List[FullUnit]]):
+    root: List[FullUnit]
 
 
-class EventsGetResponse(RootModel[List[Event]]):
-    root: List[Event]
+class EventsGetResponse(RootModel[List[FullEvent]]):
+    root: List[FullEvent]
 
 
 class EventsEventIdInvitesGetResponse(RootModel[List[EventInvite]]):
@@ -263,8 +284,8 @@ class EventsEventIdRegistrationsGetResponse(RootModel[List[EventRegistration]]):
     root: List[EventRegistration]
 
 
-class EventsRequestsGetResponse(RootModel[List[Event]]):
-    root: List[Event]
+class EventsRequestsGetResponse(RootModel[List[FullEvent]]):
+    root: List[FullEvent]
 
 
 class InvitesGetResponse(RootModel[List[EventInvite]]):
@@ -275,9 +296,9 @@ class RegistrationsGetResponse(RootModel[List[EventRegistration]]):
     root: List[EventRegistration]
 
 
-class RoomGroupsGetResponse(RootModel[List[RoomGroup]]):
-    root: List[RoomGroup]
+class RoomGroupsGetResponse(RootModel[List[FullRoomGroup]]):
+    root: List[FullRoomGroup]
 
 
-class RoomsRoomIdAutoconfirmGetResponse(RootModel[List[User]]):
-    root: List[User]
+class RoomsRoomIdAutoconfirmGetResponse(RootModel[List[FullUser]]):
+    root: List[FullUser]

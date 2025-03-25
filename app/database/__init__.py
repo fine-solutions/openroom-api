@@ -1,1 +1,1 @@
-from main import DBManager
+from .db_manager import DBManager, AsyncSession

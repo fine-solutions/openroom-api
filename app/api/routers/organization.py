@@ -21,7 +21,7 @@ organization_router = APIRouter(
     response_model=None,
     responses={'200': {'model': Organization}}
 )
-def get_organization() -> Optional[Organization]:
+async def get_organization() -> Optional[Organization]:
     """
     Получить информацию об организации
     """

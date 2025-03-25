@@ -4,7 +4,7 @@ from pydantic import conint
 from fastapi import APIRouter
 
 from api.models import (
-    Event, 
+    FullEvent, 
     EventsGetResponse, 
     EventsRequestsGetResponse,
     Status,
@@ -27,7 +27,7 @@ events_router = APIRouter(
     response_model=None,
     responses={'200': {'model': EventsGetResponse}}
 )
-def get_events(
+async def get_events(
     count: Optional[conint(le=100)] = 50,
     offset: Optional[int] = 0,
     free_entry: Optional[bool] = True,
@@ -42,7 +42,7 @@ def get_events(
 
 
 @events_router.post('/', response_model=None)
-def post_events(body: Event = None) -> None:
+async def post_events(body: FullEvent = None) -> None:
     """
     Запланировать мероприятие
     """
@@ -54,7 +54,7 @@ def post_events(body: Event = None) -> None:
     response_model=None,
     responses={'200': {'model': EventsRequestsGetResponse}}
 )
-def get_events_requests(
+async def get_events_requests(
     count: Optional[conint(le=100)] = 50, offset: Optional[int] = 0
 ) -> Optional[EventsRequestsGetResponse]:
     """
@@ -66,9 +66,9 @@ def get_events_requests(
 @events_router.get(
     '/{event_id}',
     response_model=None,
-    responses={'200': {'model': Event}}
+    responses={'200': {'model': FullEvent}}
 )
-def get_events_event_id(event_id: int) -> Optional[Event]:
+async def get_events_event_id(event_id: int) -> Optional[FullEvent]:
     """
     Получить информацию о мероприятии
     """
@@ -76,7 +76,7 @@ def get_events_event_id(event_id: int) -> Optional[Event]:
 
 
 @events_router.delete('/{event_id}', response_model=None)
-def delete_events_event_id(event_id: int) -> None:
+async def delete_events_event_id(event_id: int) -> None:
     """
     Отменить мероприятие
     """
@@ -84,7 +84,7 @@ def delete_events_event_id(event_id: int) -> None:
 
 
 @events_router.put('/{event_id}/decision', response_model=None)
-def put_events_event_id_decision(event_id: int, decision: Decision = ...) -> None:
+async def put_events_event_id_decision(event_id: int, decision: Decision = ...) -> None:
     """
     Ответить на запрос
     """
@@ -97,7 +97,7 @@ def put_events_event_id_decision(event_id: int, decision: Decision = ...) -> Non
     responses={'200': {'model': EventsEventIdInvitesGetResponse}},
     tags=['Invites'],
 )
-def get_events_event_id_invites(
+async def get_events_event_id_invites(
     event_id: int,
 ) -> Optional[EventsEventIdInvitesGetResponse]:
     """
@@ -107,7 +107,7 @@ def get_events_event_id_invites(
 
 
 @events_router.post('/{event_id}/invites', response_model=None, tags=['Invites'])
-def post_events_event_id_invites(event_id: int, user_id: int = ...) -> None:
+async def post_events_event_id_invites(event_id: int, user_id: int = ...) -> None:
     """
     Пригласить пользователя на мероприятие
     """
@@ -120,7 +120,7 @@ def post_events_event_id_invites(event_id: int, user_id: int = ...) -> None:
     responses={'200': {'model': EventsEventIdRegistrationsGetResponse}},
     tags=['Registrations'],
 )
-def get_events_event_id_registrations(
+async def get_events_event_id_registrations(
     event_id: int,
 ) -> Optional[EventsEventIdRegistrationsGetResponse]:
     """
@@ -134,7 +134,7 @@ def get_events_event_id_registrations(
     response_model=None,
     tags=['Registrations'],
 )
-def post_events_event_id_registrations(event_id: int) -> None:
+async def post_events_event_id_registrations(event_id: int) -> None:
     """
     Подать заявку на посещение мероприятия
     """

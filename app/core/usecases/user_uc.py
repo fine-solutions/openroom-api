@@ -1,0 +1,62 @@
+from typing import Optional
+from datetime import datetime
+
+from core.usecases import BaseUC
+from core.entities import User
+from core.dependencies import IUserCRUD, IAuthCRUD
+
+
+
+class RegUser(BaseUC):
+    userName: str
+    email: str
+    password: str
+    userDescription: Optional[str] = None
+    _user_crud: IUserCRUD
+    _auth_crud: IAuthCRUD
+
+
+    @classmethod
+    def set_dependencies(cls, user_crud: IUserCRUD, auth_crud: IAuthCRUD) -> 'RegUser':
+        cls._user_crud = user_crud
+        cls._auth_crud = auth_crud
+        return cls
+    
+    
+    async def execute(self) -> User:
+        user = await self._user_crud.create_user(
+            userName=self.userName,
+            registerAt=datetime.now(),
+            userDescription=self.userDescription
+        )
+
+        await self._auth_crud.create_auth_data(
+            userID=user.userID,
+            email=self.email,
+            password=self.password
+        )
+
+        return user
+
+
+
+class GetUser(BaseUC):
+    userID: int
+    _user_crud: IUserCRUD
+
+
+    @classmethod
+    def set_dependencies(cls, user_crud: IUserCRUD) -> 'GetUser':
+        cls._user_crud = user_crud
+        return cls
+    
+    
+    async def execute(self) -> User:
+        user = await self._user_crud.get_user_by_id(
+            user_id=self.userID
+        )
+
+        if user: 
+            return user
+        else: 
+            raise

@@ -22,7 +22,7 @@ permissions_router = APIRouter(
     response_model=None,
     responses={'200': {'model': PermissionsGetResponse}}
 )
-def get_permissions() -> Optional[PermissionsGetResponse]:
+async def get_permissions() -> Optional[PermissionsGetResponse]:
     """
     Получить список существующих разрешений пользователей
     """
@@ -34,7 +34,7 @@ def get_permissions() -> Optional[PermissionsGetResponse]:
     response_model=None,
     responses={'200': {'model': ExtraPermission}}
 )
-def get_permissions_permission_id(permission_id: int) -> Optional[ExtraPermission]:
+async def get_permissions_permission_id(permission_id: int) -> Optional[ExtraPermission]:
     """
     Получить информацию о указанном разрешении
     """

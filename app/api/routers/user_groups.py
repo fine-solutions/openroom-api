@@ -4,7 +4,8 @@ from pydantic import conint
 from fastapi import APIRouter
 
 from api.models import (
-    UserGroup,
+    BaseUserGroup,
+    FullUserGroup,
     UserGroupsGetResponse
     )
 
@@ -18,7 +19,7 @@ user_groups_router = APIRouter(
 
 
 @user_groups_router.post('/', response_model=None)
-def post_user_groups(body: UserGroup = None) -> None:
+async def post_user_groups(body: BaseUserGroup = None) -> None:
     """
     Создать группу пользователей
     """
@@ -30,7 +31,7 @@ def post_user_groups(body: UserGroup = None) -> None:
     response_model=None,
     responses={'200': {'model': UserGroupsGetResponse}}
 )
-def get_user_groups(
+async def get_user_groups(
     creator_id: Optional[int] = None,
 ) -> Optional[UserGroupsGetResponse]:
     """
@@ -42,9 +43,9 @@ def get_user_groups(
 @user_groups_router.get(
     '/{group_id}',
     response_model=None,
-    responses={'200': {'model': UserGroup}}
+    responses={'200': {'model': FullUserGroup}}
 )
-def get_user_groups_group_id(group_id: int) -> Optional[UserGroup]:
+async def get_user_groups_group_id(group_id: int) -> Optional[FullUserGroup]:
     """
     Получить информацию о группе пользователей
     """
@@ -52,7 +53,7 @@ def get_user_groups_group_id(group_id: int) -> Optional[UserGroup]:
 
 
 @user_groups_router.put('/{group_id}', response_model=None)
-def put_user_groups_group_id(group_id: int, body: UserGroup = None) -> None:
+async def put_user_groups_group_id(group_id: int, body: BaseUserGroup = None) -> None:
     """
     Изменить группу пользователей
     """
@@ -60,7 +61,7 @@ def put_user_groups_group_id(group_id: int, body: UserGroup = None) -> None:
 
 
 @user_groups_router.delete('/{group_id}', response_model=None)
-def delete_user_groups_group_id(group_id: int) -> None:
+async def delete_user_groups_group_id(group_id: int) -> None:
     """
     Удалить группу пользователей
     """

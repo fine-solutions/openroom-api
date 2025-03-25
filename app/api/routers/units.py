@@ -4,7 +4,8 @@ from pydantic import conint
 from fastapi import APIRouter, Query, Request
 
 from api.models import (
-    Unit,
+    BaseUnit,
+    FullUnit,
     UnitsGetResponse,
     UnitsUnitIdFloorsGetRequest
     )
@@ -19,7 +20,7 @@ units_router = APIRouter(
 
 
 @units_router.post('/', response_model=None)
-def post_units(
+async def post_units(
     unit_name: str = Query(..., alias='unitName'),
     unit_description: Optional[str] = Query(None, alias='unitDescription'),
     request: Request = ...,
@@ -35,7 +36,7 @@ def post_units(
     response_model=None,
     responses={'200': {'model': UnitsGetResponse}}
 )
-def get_units() -> Optional[UnitsGetResponse]:
+async def get_units() -> Optional[UnitsGetResponse]:
     """
     Получить список корпусов организации
     """
@@ -45,9 +46,9 @@ def get_units() -> Optional[UnitsGetResponse]:
 @units_router.get(
     '/{unit_id}',
     response_model=None,
-    responses={'200': {'model': Unit}}
+    responses={'200': {'model': FullUnit}}
 )
-def get_units_unit_id(unit_id: int) -> Optional[Unit]:
+async def get_units_unit_id(unit_id: int) -> Optional[FullUnit]:
     """
     Получить информацию о корпусе
     """
@@ -55,7 +56,7 @@ def get_units_unit_id(unit_id: int) -> Optional[Unit]:
 
 
 @units_router.put('/{unit_id}', response_model=None)
-def put_units_unit_id(unit_id: int, body: Unit = None) -> None:
+async def put_units_unit_id(unit_id: int, body: BaseUnit = None) -> None:
     """
     Изменить информацию о корпусе
     """
@@ -63,7 +64,7 @@ def put_units_unit_id(unit_id: int, body: Unit = None) -> None:
 
 
 @units_router.get('/{unit_id}/floors', response_model=None)
-def get_units_unit_id_floors(
+async def get_units_unit_id_floors(
     unit_id: int, body: UnitsUnitIdFloorsGetRequest = None
 ) -> None:
     """

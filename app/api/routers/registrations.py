@@ -23,7 +23,7 @@ registrations_router = APIRouter(
     response_model=None,
     responses={'200': {'model': RegistrationsGetResponse}}
 )
-def get_registrations(
+async def get_registrations(
     status: Optional[EventRegistrationStatus] = None,
 ) -> Optional[RegistrationsGetResponse]:
     """
@@ -35,7 +35,7 @@ def get_registrations(
 @registrations_router.put(
     '/{event_id}/{user_id}', response_model=None
 )
-def put_registrations_event_id_user_id(
+async def put_registrations_event_id_user_id(
     event_id: int, user_id: int = ..., decision: Decision = ...
 ) -> None:
     """

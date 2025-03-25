@@ -4,7 +4,8 @@ from pydantic import conint
 from fastapi import APIRouter
 
 from api.models import (
-    Room,
+    FullRoom,
+    BaseRoom,
     RoomsRoomIdAutoconfirmGetResponse,
     RoomsRoomIdAutoconfirmPutRequest
     )
@@ -21,9 +22,9 @@ rooms_router = APIRouter(
 @rooms_router.get(
     '/{room_id}',
     response_model=None,
-    responses={'200': {'model': Room}}
+    responses={'200': {'model': FullRoom}}
 )
-def get_rooms_room_id(room_id: int) -> Optional[Room]:
+async def get_rooms_room_id(room_id: int) -> Optional[FullRoom]:
     """
     Получить данные о помещении
     """
@@ -31,7 +32,7 @@ def get_rooms_room_id(room_id: int) -> Optional[Room]:
 
 
 @rooms_router.put('/{room_id}', response_model=None)
-def put_rooms_room_id(room_id: int, body: Room = None) -> None:
+async def put_rooms_room_id(room_id: int, body: BaseRoom = None) -> None:
     """
     Изменить даные о аудитории
     """
@@ -43,7 +44,7 @@ def put_rooms_room_id(room_id: int, body: Room = None) -> None:
     response_model=None,
     responses={'200': {'model': RoomsRoomIdAutoconfirmGetResponse}}
 )
-def get_rooms_room_id_autoconfirm(
+async def get_rooms_room_id_autoconfirm(
     room_id: int,
 ) -> Optional[RoomsRoomIdAutoconfirmGetResponse]:
     """
@@ -53,7 +54,7 @@ def get_rooms_room_id_autoconfirm(
 
 
 @rooms_router.put('/{room_id}/autoconfirm', response_model=None)
-def put_rooms_room_id_autoconfirm(
+async def put_rooms_room_id_autoconfirm(
     room_id: int, body: RoomsRoomIdAutoconfirmPutRequest = None
 ) -> None:
     """
