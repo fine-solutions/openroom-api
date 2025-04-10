@@ -1,17 +1,15 @@
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Response
 
-
-from core.usecases import RegUser
-from adapters import DBAuthCRUD, DBUserCrud
 from api.models import FullUser, RegUserData, TokenSet, LoginPostRequest
-from database import DBManager
-
-from config import conf
-
-
-RegUser.set_dependencies(user_crud=DBUserCrud, auth_crud=DBAuthCRUD)
+from api.security import auth_scheme, refresh_scheme, get_user_id
+from api.dependencies import (
+    GetUser, 
+    RegUser, 
+    UserLoginBasic,
+    UserLoginRefresh
+)
 
 
 
@@ -24,17 +22,26 @@ account_router = APIRouter(
 @account_router.get(
     '/account',
     response_model=None,
-    responses={'200': {'model': FullUser}}
+    responses={'200': {'model': FullUser}},
+    dependencies=[Depends(auth_scheme)]
 )
-async def get_account() -> Optional[FullUser]:
+async def get_account(user_id: str = Depends(get_user_id)) -> FullUser:
     """
     Получить данные своего аккаунта
     """
-    pass
+    uc = GetUser(userID=user_id)
+
+    user = await uc.execute()
+
+    return FullUser(**user.model_dump())
 
 
-@account_router.put('/account', response_model=None)
-async def put_account(body: RegUserData = None) -> None:
+@account_router.put(
+    '/account', 
+    response_model=None,
+    dependencies=[Depends(auth_scheme)]
+)
+async def put_account(body: RegUserData = None, user_id: str = Depends(get_user_id)) -> FullUser:
     """
     Изменить данные своего аккаунта
     """
@@ -46,27 +53,63 @@ async def put_account(body: RegUserData = None) -> None:
     response_model=None,
     responses={'200': {'model': TokenSet}}
 )
-async def post_login(body: LoginPostRequest = None) -> Optional[TokenSet]:
+async def post_login(res: Response, body: LoginPostRequest = None) -> TokenSet:
     """
     Войти в систему по логину и паролю (получить JWT токены)
     """
-    pass
+    uc = UserLoginBasic(email=body.email, password=body.password)
+    jwt_set = await uc.execute()
+
+    res.set_cookie(
+        key='access_token',
+        value=jwt_set['access_token'],
+        secure=False,
+        httponly=True,
+        path='/'
+    )
+    res.set_cookie(
+        key='refresh_token',
+        value=jwt_set['refresh_token'],
+        secure=False,
+        httponly=True,
+        path='/login/refresh'
+    )
+
+    return TokenSet(accessToken=jwt_set['access_token'], refreshToken=jwt_set['refresh_token'])
 
 
 @account_router.post(
     '/login/refresh',
     response_model=None,
-    responses={'200': {'model': str}}
+    responses={'200': {'model': TokenSet}}
 )
-async def post_login_refresh(body: str = None) -> Optional[str]:
+async def post_login_refresh(res: Response, user_refresh: str = Depends(refresh_scheme)) -> TokenSet:
     """
     Обновить access token
     """
-    pass
+    uc = UserLoginRefresh(refresh_token=user_refresh)
+    jwt_set = await uc.execute()
+
+    res.set_cookie(
+        key='access_token',
+        value=jwt_set['access_token'],
+        secure=False,
+        httponly=True,
+        path='/'
+    )
+    res.set_cookie(
+        key='refresh_token',
+        value=jwt_set['refresh_token'],
+        secure=False,
+        httponly=True,
+        path='/login/refresh'
+    )
+
+    return TokenSet(accessToken=jwt_set['access_token'], refreshToken=jwt_set['refresh_token'])
 
 
 @account_router.post('/register', response_model=None)
-async def post_register(body: RegUserData = None) -> None:
+async def post_register(body: RegUserData = None) -> FullUser:
     """
     Создать аккаунт в системе
     """
@@ -77,6 +120,6 @@ async def post_register(body: RegUserData = None) -> None:
         userDescription=body.userDescription
     )
 
-    print(await uc.execute())
+    user = await uc.execute()
 
-    return 
+    return FullUser(**user.model_dump())

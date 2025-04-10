@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 from datetime import datetime
 
 from core.usecases import BaseUC
@@ -8,6 +8,9 @@ from core.dependencies import IUserCRUD, IAuthCRUD
 
 
 class RegUser(BaseUC):
+    """
+    Зарегистрировать пользователя в системе
+    """
     userName: str
     email: str
     password: str
@@ -41,6 +44,9 @@ class RegUser(BaseUC):
 
 
 class GetUser(BaseUC):
+    """
+    Получить профиль пользователя
+    """
     userID: int
     _user_crud: IUserCRUD
 

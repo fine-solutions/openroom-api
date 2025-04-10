@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import List, Optional
+from datetime import datetime
 
 from pydantic import AwareDatetime, BaseModel, EmailStr, Field, RootModel
 
@@ -29,14 +30,14 @@ class RegUserData(BaseUser):
 
 class FullUser(BaseUser):
     userID: int = Field(..., examples=[234])
-    registerAt: AwareDatetime
+    registerAt: datetime
     availableRoomIDs: Optional[List[int]] = Field(
         None, description='ID помещений, доступных пользователю для бронирования'
     )
     adminedRoomIDs: Optional[List[int]] = Field(
         None, description='ID помещений, даминистратором которых является пользователь'
     )
-    extraPermissionsIDs: Optional[List[int]] = Field(
+    extraPermissionIDs: Optional[List[int]] = Field(
         None, description='Особые права пользователя'
     )
 
@@ -225,7 +226,7 @@ class Status(RootModel[List[EventStatus]]):
 
 class LoginPostRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., examples=['SuPerPassWord'])
+    password: str = Field(..., examples=['sUp3rPassworD'])
 
 
 class UnitsUnitIdFloorsGetRequest(RootModel[List[Floor]]):

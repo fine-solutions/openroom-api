@@ -10,6 +10,10 @@ class Config(BaseSettings):
     DB_PORT: int
     DB_NAME: str
 
+    JWT_SECRET_KEY: str
+    JWT_ACCESS_TTL: int
+    JWT_REFRESH_TTL: int
+
     model_config = SettingsConfigDict(env_file=path.abspath(__file__).replace('config.py', '.env'))
 
     def get_db_url(self) -> str:

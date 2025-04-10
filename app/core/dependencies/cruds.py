@@ -11,7 +11,7 @@ class IUserCRUD(ABC):
         pass
 
     @abstractmethod
-    async def get_user_by_id(self, user_id: int):
+    async def get_user_by_id(self, user_id: int) -> User:
         pass
 
     @abstractmethod
@@ -37,7 +37,11 @@ class IAuthCRUD(ABC):
         pass
 
     @abstractmethod
-    async def get_auth_data_by_user_id(self, user_id: int):
+    async def get_auth_data_by_user_id(self, user_id: int) -> AuthData:
+        pass
+
+    @abstractmethod
+    async def get_auth_data_by_email(self, email: str) -> AuthData:
         pass
 
     @abstractmethod

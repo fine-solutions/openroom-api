@@ -1,26 +1,27 @@
 from typing import Optional
 
 from pydantic import conint
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from core.usecases import GetUser
-from adapters import DBUserCrud
 from api.models import (
     FullUser,
     UsersUserIdAdminedRoomsPutRequest,
     UsersUserIdAvailableRoomsPutRequest,
     UsersUserIdPermissionsPutRequest
     )
+from api.security import auth_scheme, get_user_id
+from api.dependencies import (
+    GetUser
+)
 
 from config import conf
 
 
-GetUser.set_dependencies(user_crud=DBUserCrud)
-
 
 users_router = APIRouter(
     prefix='/users',
-    tags=['Users']
+    tags=['Users'],
+    dependencies=[Depends(auth_scheme)]
 )
 
 
@@ -39,7 +40,7 @@ async def get_users_user_id(user_id: int) -> Optional[FullUser]:
 
 
 @users_router.delete('/{user_id}', response_model=None)
-async def delete_users_user_id(user_id: int) -> None:
+async def delete_users_user_id(user_id: int, requester_id: str = Depends(get_user_id)) -> None:
     """
     Удалить пользователя
     """
@@ -48,7 +49,7 @@ async def delete_users_user_id(user_id: int) -> None:
 
 @users_router.put('/{user_id}/admined_rooms', response_model=None)
 async def put_users_user_id_admined_rooms(
-    user_id: int, body: UsersUserIdAdminedRoomsPutRequest = None
+    user_id: int, body: UsersUserIdAdminedRoomsPutRequest = None, requester_id: str = Depends(get_user_id)
 ) -> None:
     """
     Изменить список помещений, управляемых пользователем
@@ -58,7 +59,7 @@ async def put_users_user_id_admined_rooms(
 
 @users_router.put('/{user_id}/available_rooms', response_model=None)
 async def put_users_user_id_available_rooms(
-    user_id: int, body: UsersUserIdAvailableRoomsPutRequest = None
+    user_id: int, body: UsersUserIdAvailableRoomsPutRequest = None, requester_id: str = Depends(get_user_id)
 ) -> None:
     """
     Изменить список доступных пользователю помещений
@@ -68,7 +69,7 @@ async def put_users_user_id_available_rooms(
 
 @users_router.put('/{user_id}/permissions', response_model=None)
 async def put_users_user_id_permissions(
-    user_id: int, body: UsersUserIdPermissionsPutRequest = None
+    user_id: int, body: UsersUserIdPermissionsPutRequest = None, requester_id: str = Depends(get_user_id)
 ) -> None:
     """
     Изменить права пользователя
