@@ -8,7 +8,8 @@ from api.dependencies import (
     GetUser, 
     RegUser, 
     UserLoginBasic,
-    UserLoginRefresh
+    UserLoginRefresh,
+    EditUser
 )
 
 
@@ -45,7 +46,16 @@ async def put_account(body: RegUserData = None, user_id: str = Depends(get_user_
     """
     Изменить данные своего аккаунта
     """
-    pass
+    uc = EditUser(
+        userID=user_id,
+        userName=body.userName,
+        userDescription=body.userDescription,
+        email=body.email,
+        password=body.password
+    )
+
+    result = await uc.execute()
+    return FullUser(**result.model_dump())
 
 
 @account_router.post(

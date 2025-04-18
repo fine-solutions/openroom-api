@@ -9,3 +9,4 @@ from api.routers.rooms import rooms_router
 from api.routers.units import units_router
 from api.routers.user_groups import user_groups_router
 from api.routers.users import users_router
+from api.routers.bildings import buildings_router

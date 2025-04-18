@@ -21,12 +21,14 @@ class User(Base):
 
     auth_data: Mapped["AuthData"] = relationship(
         "AuthData",
-        back_populates="user"
+        back_populates="user",
+        lazy="joined"
     )
     
     permission_ids: Mapped[list["UserPermission"]] = relationship(
         "UserPermission",
-        back_populates="user"
+        back_populates="user",
+        lazy="joined"
     )
 
     created_user_groups: Mapped[list["UserGroup"]] = relationship(
@@ -46,12 +48,14 @@ class User(Base):
 
     available_room_ids: Mapped[list["AvailableRoom"]] = relationship(
         "AvailableRoom",
-        back_populates="user"
+        back_populates="user",
+        lazy="joined"
     )
 
     admined_room_ids: Mapped[list["AdminedRoom"]] = relationship(
         "AdminedRoom",
-        back_populates="user"
+        back_populates="user",
+        lazy="joined"
     )
 
     organized_events: Mapped[list["Event"]] = relationship(
@@ -93,12 +97,14 @@ class UserPermission(Base):
 
     user: Mapped["User"] = relationship(
         "User",
-        back_populates="permission_ids"
+        back_populates="permission_ids",
+        lazy="joined"
     )
 
     permission: Mapped["Permission"] = relationship(
         "Permission",
-        back_populates="user_ids"
+        back_populates="user_ids",
+        lazy="joined"
     )
 
 
@@ -112,7 +118,8 @@ class AuthData(Base):
 
     user: Mapped["User"] = relationship(
         "User",
-        back_populates="auth_data"
+        back_populates="auth_data",
+        lazy="joined"
     )
 
 
@@ -133,7 +140,8 @@ class UserGroup(Base):
 
     user_ids: Mapped[list["UserInGroup"]] = relationship(
         "UserInGroup",
-        back_populates="group"
+        back_populates="group",
+        lazy="joined"
     )
 
 
@@ -151,7 +159,26 @@ class UserInGroup(Base):
 
     user: Mapped["User"] = relationship(
         "User",
-        back_populates="group_ids"
+        back_populates="group_ids",
+        lazy="joined"
+    )
+
+
+
+class Building(Base):
+    __tablename__ = "building"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(50))
+    description: Mapped[str] = mapped_column(String(1000), nullable=True)
+    schema_uri: Mapped[str]
+    geopoint_lt: Mapped[str]
+    geopoint_rb: Mapped[str]
+
+    units: Mapped[list["Unit"]] = relationship(
+        "Unit",
+        back_populates="building",
+        lazy="joined"
     )
 
 
@@ -161,11 +188,18 @@ class Unit(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50))
-    description: Mapped[str] = mapped_column(String(1000))
+    description: Mapped[str] = mapped_column(String(1000), nullable=True)
+    building_id: Mapped[int] = mapped_column(ForeignKey("building.id"))
 
     floors: Mapped[list["Floor"]] = relationship(
         "Floor",
-        back_populates="unit"
+        back_populates="unit",
+        lazy="joined"
+    )
+
+    building: Mapped["Building"] = relationship(
+        "Building",
+        back_populates="units"
     )
 
 
@@ -185,7 +219,8 @@ class Floor(Base):
 
     rooms: Mapped[list["Room"]] = relationship(
         "Room",
-        back_populates="floor"
+        back_populates="floor",
+        lazy="joined"
     )
 
 
@@ -195,7 +230,7 @@ class Room(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
-    description: Mapped[str] = mapped_column(String(1000))
+    description: Mapped[str] = mapped_column(String(1000), nullable=True)
     floor_id: Mapped[int] = mapped_column(ForeignKey("floor.id"))
 
     floor: Mapped["Floor"] = relationship(
@@ -241,7 +276,8 @@ class RoomGroup(Base):
 
     room_ids: Mapped[list["RoomInGroup"]] = relationship(
         "RoomInGroup",
-        back_populates="group"
+        back_populates="group",
+        lazy="joined"
     )
 
 
@@ -254,12 +290,14 @@ class RoomInGroup(Base):
 
     room: Mapped["Room"] = relationship(
         "Room",
-        back_populates="group_ids"
+        back_populates="group_ids",
+        lazy="joined"
     )
 
     group: Mapped["RoomGroup"] = relationship(
         "RoomGroup",
-        back_populates="room_ids"
+        back_populates="room_ids",
+        lazy="joined"
     )
 
 

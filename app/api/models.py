@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from re import S
 from typing import List, Optional
 from datetime import datetime
 
@@ -123,7 +124,19 @@ class FullUnit(BaseUnit):
         None, description='ID помещений, находящихся в этом корпусе'
     )
     floorIDs: Optional[List[Floor]] = None
-    schema_: str = Field(
+
+
+class BaseBuilding(BaseModel):
+    buildingName: str = Field(..., examples=['ВГУ - Главное здание'])
+    buildingDescription: Optional[str] = None
+    geopointLT: str 
+    geopointRB: str
+
+
+class FullBuilding(BaseBuilding):
+    buildingID: int = Field(..., examples=[1])
+    unitIDs: list[int]
+    svg_schema: str = Field(
         ...,
         alias='schema',
         description='Ссылка на svg-план корпуса',

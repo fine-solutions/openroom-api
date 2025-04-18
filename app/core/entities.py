@@ -2,6 +2,7 @@
 Базовые сущности системы
 """
 from datetime import datetime
+from re import S
 from typing import Optional, List
 from enum import Enum
 
@@ -34,6 +35,20 @@ class User(BaseModel):
 
 
 
+class Building(BaseModel):
+    '''
+    Датакласс для строения
+    '''
+    buildingID: int
+    buildingName: str 
+    buildingDescription: Optional[str] = None
+    geopointLT: str 
+    geopointRB: str
+    unitIDs: list[int]
+    svg_schema: str 
+
+
+
 class Unit(BaseModel):
     '''
     Датакласс корпуса организации
@@ -41,8 +56,7 @@ class Unit(BaseModel):
     unitID: int 
     unitName: str  
     unitDescription: Optional[str] = None 
-    svg_schema: str 
-    roomIDs: list[int]
+    floorIDs: list[int]
 
 
 
@@ -53,6 +67,7 @@ class Floor(BaseModel):
     floorID: int
     floorName: Optional[str] = None
     floorSequence: int
+    roomIDs: list[int]
 
 
 
@@ -64,7 +79,6 @@ class Room(BaseModel):
     romName: Optional[str] = 'Unnamed room'
     roomDescription: Optional[str] = None
     floorID: int
-    unitID: int
 
 
 

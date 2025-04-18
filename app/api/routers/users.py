@@ -14,8 +14,6 @@ from api.dependencies import (
     GetUser
 )
 
-from config import conf
-
 
 
 users_router = APIRouter(

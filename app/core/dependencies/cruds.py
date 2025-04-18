@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from abc import ABC, abstractmethod
 
-from core.entities import User, AuthData
+from core.entities import Floor, User, AuthData, Building, Unit, Floor, Room
 
 
 
@@ -57,5 +57,51 @@ class IAuthCRUD(ABC):
         pass 
 
     @abstractmethod
-    async def update_auth_data_by_user_id(self, auth_data: AuthData) -> AuthData:
+    async def update_auth_data(self, auth_data: AuthData) -> AuthData:
+        pass
+
+
+
+class IBuildingCRUD():
+
+    @abstractmethod
+    async def create_building(
+            name: str,
+            schema_uri: str,
+            geopoint_lt: str,
+            geopoint_rb: str,
+            description: Optional[str] = None) -> Building:
+        pass
+
+
+
+class IUnitCRUD():
+
+    @abstractmethod
+    async def create_unit(
+            name: str,
+            building_id: int,
+            description: Optional[str] = None) -> Unit:
+        pass
+
+
+
+class IFloorCRUD():
+
+    @abstractmethod
+    async def create_floor(
+            name: str,
+            sequence: int,
+            unit_id: int) -> Floor:
+        pass
+
+
+
+class IRoomCRUD():
+
+    @abstractmethod
+    async def create_room(
+            name: str,
+            floor_id: int,
+            description: Optional[str] = None) -> Room:
         pass
