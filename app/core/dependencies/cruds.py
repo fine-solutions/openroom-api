@@ -15,11 +15,9 @@ class IUserCRUD(ABC):
         pass
 
     @abstractmethod
-    async def create_user(
+    async def save_user(
             self,
-            userName: str, 
-            registerAt: datetime,
-            userDescription: Optional[str] = None) -> User:
+            user: User) -> User:
         pass 
 
     @abstractmethod
@@ -45,11 +43,9 @@ class IAuthCRUD(ABC):
         pass
 
     @abstractmethod
-    async def create_auth_data(
+    async def save_auth_data(
             self,
-            userID: str, 
-            email: datetime,
-            password: Optional[str] = None) -> AuthData:
+            auth_data: AuthData) -> AuthData:
         pass 
 
     @abstractmethod
@@ -65,12 +61,11 @@ class IAuthCRUD(ABC):
 class IBuildingCRUD():
 
     @abstractmethod
-    async def create_building(
-            name: str,
-            schema_uri: str,
-            geopoint_lt: str,
-            geopoint_rb: str,
-            description: Optional[str] = None) -> Building:
+    async def save_building(self, building: Building) -> Building:
+        pass
+        
+    @abstractmethod
+    async def get_building_by_id(building_id: int) -> Building:
         pass
 
 
@@ -78,10 +73,7 @@ class IBuildingCRUD():
 class IUnitCRUD():
 
     @abstractmethod
-    async def create_unit(
-            name: str,
-            building_id: int,
-            description: Optional[str] = None) -> Unit:
+    async def save_unit(self, unit: Unit) -> Unit:
         pass
 
 
@@ -89,10 +81,7 @@ class IUnitCRUD():
 class IFloorCRUD():
 
     @abstractmethod
-    async def create_floor(
-            name: str,
-            sequence: int,
-            unit_id: int) -> Floor:
+    async def save_floor(self, floor: Floor) -> Floor:
         pass
 
 
@@ -100,8 +89,5 @@ class IFloorCRUD():
 class IRoomCRUD():
 
     @abstractmethod
-    async def create_room(
-            name: str,
-            floor_id: int,
-            description: Optional[str] = None) -> Room:
+    async def save_room(self, room: Room) -> Room:
         pass

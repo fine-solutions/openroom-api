@@ -36,45 +36,62 @@ class InitBuilding(BaseUC):
 
     async def execute(self) -> Building:
         data = await self.svg_schema.read()
-        root = etree.XML(data, etree.XMLParser())
+        xml_root = etree.XML(data, etree.XMLParser())
 
         schema_uri = await self._fstorage.save_file(self.svg_schema, self.svg_schema.filename)
 
-        xml_building: ElementBase = root.xpath('descendant::*[@type=\'building\']')[0]
+        xml_building: ElementBase = xml_root.xpath('descendant::*[@type=\'building\']')[0]
 
-        building = await self._building_crud.create_building(
-            name=xml_building.get('building-name'),
-            description=xml_building.get('building-description'),
-            geopoint_lt=xml_building.get('geopoint-lt'),
-            geopoint_rb=xml_building.get('geopoint-rb'),
-            schema_uri=schema_uri
+        building = Building(
+            buildingID=xml_building.get('building-id'),
+            buildingName=xml_building.get('building-name'),
+            buildingDescription=xml_building.get('building-description'),
+            geopointLT=xml_building.get('geopoint-lt'),
+            geopointRB=xml_building.get('geopoint-rb'),
+            svg_schema=schema_uri,
+            units=[]
         )
         
         xml_units: list[ElementBase] = xml_building.xpath('descendant::*[@type=\'unit\']')
 
         for u in xml_units:
-            unit = await self._unit_crud.create_unit(
-                name=u.get('unit-name'),
-                building_id=building.buildingID,
-                description=u.get('unit-description')
+            unit = Unit(
+                unitID=u.get('unit-id'),
+                unitName=u.get('unit-name'),
+                unitDescription=u.get('unit-edscription'),
+                buildingID=building.buildingID,
+                floors=[]
             )
             
             xml_floors: list[ElementBase] = u.xpath('descendant::*[@type=\'floor\']')
             
             for f in xml_floors:
-                floor = await self._floor_crud.create_floor(
-                    name=f.get('floor-name'),
-                    sequence=int(f.get('floor-level')),
-                    unit_id=unit.unitID
+                floor = Floor(
+                    floorID=f.get('floor-id'),
+                    floorName=f.get('floor-name'),
+                    floorSequence=int(f.get('floor-level')),
+                    unitID=unit.unitID,
+                    rooms=[]
                 )
 
                 xml_rooms: list[ElementBase] = f.xpath('descendant::*[@type=\'room\']')
                 
                 for r in xml_rooms:
-                    room = await self._room_crud.create_room(
-                        name=r.get('room-name'),
-                        description=r.get('room-description'),
-                        floor_id=floor.floorID
+                    room = Room(
+                        roomID=r.get('room-id'),
+                        romName=r.get('room-name'),
+                        roomDescription=r.get('room-description'),
+                        floorID=floor.floorID
                     )
+
+                    floor.rooms.append(room)
+
+                unit.floors.append(floor)
+            
+            building.units.append(unit)
+        
+        building = await self._building_crud.save_building(building=building)
+
+        building = await self._building_crud.get_building_by_id(building_id=building.buildingID)
         
         return building

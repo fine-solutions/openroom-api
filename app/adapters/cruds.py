@@ -23,32 +23,30 @@ def get_DBUser_CRUD(dbmanager: DBManager) -> IUserCRUD:
     '''
 
     class DBUserCrud(IUserCRUD):
+        
+        # @classmethod
+        # @dbmanager.connection
+        # async def create_user(cls, session: AsyncSession, userName: str, registerAt: datetime, userDescription: str = None) -> User:
+        #     dbuser = DBUser(name = userName, 
+        #                     description = userDescription, 
+        #                     create_at = registerAt)
+            
+        #     session.add(dbuser)
+        #     await session.commit()
+        #     dbuser = (await session.execute(select(DBUser).where(DBUser.id == dbuser.id))).scalars().first()
+
+        #     return dbuser.db_to_app_model()
 
         @classmethod
-        def _db_to_app_model(cls, db_model: DBUser) -> User:
-            return User(
-                userID=db_model.id,
-                userName=db_model.name,
-                userDescription=db_model.description,
-                registerAt=db_model.create_at,
-                extraPermissionIDs=[p.permission_id for p in db_model.permission_ids],
-                adminedRoomIDs=[r.room_id for r in db_model.admined_room_ids],
-                availableRoomIDs=[r.room_id for r in db_model.available_room_ids]
-            )
-        
-        @classmethod
         @dbmanager.connection
-        async def create_user(cls, session: AsyncSession, userName: str, registerAt: datetime, userDescription: str = None) -> User:
-            dbuser = DBUser(name = userName, 
-                            description = userDescription, 
-                            create_at = registerAt)
+        async def save_user(cls, session: AsyncSession, user: User) -> User:
+            dbuser = DBUser.from_app_model(user)
             
             session.add(dbuser)
             await session.commit()
             dbuser = (await session.execute(select(DBUser).where(DBUser.id == dbuser.id))).scalars().first()
 
-            user = cls._db_to_app_model(dbuser)
-            return user
+            return dbuser.db_to_app_model()
 
 
         @classmethod
@@ -60,7 +58,7 @@ def get_DBUser_CRUD(dbmanager: DBManager) -> IUserCRUD:
 
             record = result.scalars().first()
 
-            return cls._db_to_app_model(record) if record else None
+            return record.db_to_app_model()
 
 
         async def delete_user_by_id(self, user_id) -> None:
@@ -83,7 +81,7 @@ def get_DBUser_CRUD(dbmanager: DBManager) -> IUserCRUD:
 
             new_user = await session.get(DBUser, user.userID)
 
-            return cls._db_to_app_model(new_user)
+            return new_user.db_to_app_model()
 
 
     return DBUserCrud
@@ -97,27 +95,15 @@ def get_DBAuth_CRUD(dbmanager: DBManager) -> IAuthCRUD:
     class DBAuthCRUD(IAuthCRUD):
 
         @classmethod
-        def _db_to_app_model(cls, db_model: DBAuthData) -> AuthData:
-            return AuthData(
-                userID=db_model.user_id,
-                email=db_model.email,
-                password=db_model.password
-            )
-
-        @classmethod
         @dbmanager.connection
-        async def create_auth_data(cls, session: AsyncSession, userID: int, email: str, password: str) -> AuthData:
-            dbauth = DBAuthData(
-                user_id = userID,
-                email = email,
-                password = password
-            )
+        async def save_auth_data(cls, session: AsyncSession, auth_data: AuthData) -> AuthData:
+            dbauth = DBAuthData.from_app_model(auth_data)
 
             session.add(dbauth)
 
             await session.commit()
 
-            return cls._db_to_app_model(dbauth)
+            return dbauth.db_to_app_model()
         
 
         @classmethod
@@ -129,7 +115,7 @@ def get_DBAuth_CRUD(dbmanager: DBManager) -> IAuthCRUD:
 
             record = result.scalars().first()
 
-            return cls._db_to_app_model(record)
+            return record.db_to_app_model()
 
 
         @classmethod
@@ -141,7 +127,7 @@ def get_DBAuth_CRUD(dbmanager: DBManager) -> IAuthCRUD:
 
             record = result.scalars().first()
 
-            return cls._db_to_app_model(record)
+            return record.db_to_app_model()
 
 
         async def delete_auth_data_by_user_id(self, user_id):
@@ -161,7 +147,7 @@ def get_DBAuth_CRUD(dbmanager: DBManager) -> IAuthCRUD:
 
             result = (await session.scalars(query)).first()
 
-            return cls._db_to_app_model(result)
+            return result.db_to_app_model()
 
     return DBAuthCRUD
 
@@ -174,41 +160,29 @@ def get_DBBuilding_CRUD(dbmanager: DBManager) -> IBuildingCRUD:
     class DBBuildingCRUD(IBuildingCRUD):
 
         @classmethod
-        def _db_to_app_model(cls, db_model: DBBuilding) -> Building:
-            return Building(
-                buildingID=db_model.id,
-                buildingName=db_model.name,
-                buildingDescription=db_model.description,
-                unitIDs=[u.id for u in db_model.units],
-                svg_schema=db_model.schema_uri,
-                geopointRB=db_model.geopoint_rb,
-                geopointLT=db_model.geopoint_lt
-            )
+        @dbmanager.connection
+        async def save_building(cls, session: AsyncSession, building: Building) -> Building:
+            
+            dbbuilding = DBBuilding.from_app_model(building)
 
+            session.add(dbbuilding)
+            await session.commit()
+
+            dbbuilding = (await session.execute(select(DBBuilding).where(DBBuilding.id == dbbuilding.id))).scalars().first()
+
+            return dbbuilding.db_to_app_model()
+        
 
         @classmethod
         @dbmanager.connection
-        async def create_building(cls, session: AsyncSession,
-                name: str,
-                schema_uri: str,
-                geopoint_lt: str,
-                geopoint_rb: str,
-                description: Optional[str] = None) -> Building:
-            
-            building = DBBuilding(
-                name = name,
-                description = description,
-                schema_uri = schema_uri,
-                geopoint_lt = geopoint_lt,
-                geopoint_rb = geopoint_rb
-            )
+        async def get_building_by_id(cls, session: AsyncSession, building_id: int) -> Building:
+            query = select(DBBuilding).where(DBBuilding.id == building_id)
 
-            session.add(building)
-            await session.commit()
+            result = await session.execute(query)
 
-            dbbuilding = (await session.execute(select(DBBuilding).where(DBBuilding.id == building.id))).scalars().first()
+            record = result.scalars().first()
 
-            return cls._db_to_app_model(dbbuilding)
+            return record.db_to_app_model()
         
     return DBBuildingCRUD
 
@@ -221,34 +195,17 @@ def get_DBUnit_CRUD(dbmanager: DBManager) -> IUnitCRUD:
     class DBUnitCRUD(IUnitCRUD):
 
         @classmethod
-        def _db_to_app_model(cls, db_model: DBUnit) -> Unit:
-            return Unit(
-                unitID=db_model.id,
-                unitName=db_model.name,
-                unitDescription=db_model.description,
-                floorIDs=[f.id for f in db_model.floors]
-            )
-        
-
-        @classmethod
         @dbmanager.connection
-        async def create_unit(cls, session: AsyncSession,
-                name: str,
-                building_id: int,
-                description: Optional[str] = None) -> Unit:
+        async def save_unit(cls, session: AsyncSession, unit: Unit) -> Unit:
             
-            unit = DBUnit(
-                name = name,
-                description = description,
-                building_id = building_id
-            )
+            dbunit = DBUnit.from_app_model(unit)
 
-            session.add(unit)
+            session.add(dbunit)
             await session.commit()
 
-            dbunit = (await session.execute(select(DBUnit).where(DBUnit.id == unit.id))).scalars().first()
+            dbunit = (await session.execute(select(DBUnit).where(DBUnit.id == dbunit.id))).scalars().first()
 
-            return cls._db_to_app_model(dbunit)
+            return dbunit.db_to_app_model()
         
     return DBUnitCRUD
 
@@ -261,34 +218,17 @@ def get_DBFloor_CRUD(dbmanager: DBManager) -> IFloorCRUD:
     class DBFloorCRUD(IFloorCRUD):
 
         @classmethod
-        def _db_to_app_model(cls, db_model: DBFloor) -> Floor:
-            return Floor(
-                floorID=db_model.id,
-                floorName=db_model.name,
-                floorSequence=db_model.sequence,
-                roomIDs=[r.id for r in db_model.rooms]
-            )
-        
-
-        @classmethod
         @dbmanager.connection
-        async def create_floor(cls, session: AsyncSession,
-                name: str,
-                sequence: int,
-                unit_id: int) -> Floor:
+        async def save_floor(cls, session: AsyncSession, floor: Floor) -> Floor:
             
-            floor = DBFloor(
-                name = name,
-                sequence = sequence,
-                unit_id = unit_id
-            )
+            dbfloor = DBFloor.from_app_model(floor)
 
-            session.add(floor)
+            session.add(dbfloor)
             await session.commit()
 
-            dbfloor = (await session.execute(select(DBFloor).where(DBFloor.id == floor.id))).scalars().first()
+            dbfloor = (await session.execute(select(DBFloor).where(DBFloor.id == dbfloor.id))).scalars().first()
 
-            return cls._db_to_app_model(dbfloor)
+            return dbfloor.db_to_app_model()
         
     return DBFloorCRUD
 
@@ -299,35 +239,18 @@ def get_DBRoom_CRUD(dbmanager: DBManager) -> IRoomCRUD:
     Фабрика для класса DBAuthCRUD
     '''
     class DBRoomCRUD(IRoomCRUD):
-
-        @classmethod
-        def _db_to_app_model(cls, db_model: DBRoom) -> Room:
-            return Room(
-                roomID=db_model.id,
-                romName=db_model.name,
-                roomDescription=db_model.description,
-                floorID=db_model.floor_id
-            )
         
-
         @classmethod
         @dbmanager.connection
-        async def create_room(cls, session: AsyncSession,
-                name: str,
-                floor_id: int,
-                description: Optional[str] = None) -> Room:
+        async def save_room(cls, session: AsyncSession, room: Room) -> Room:
             
-            room = DBRoom(
-                name = name,
-                description = description,
-                floor_id = floor_id
-            )
+            dbroom = DBRoom.from_app_model(room)
             
-            session.add(room)
+            session.add(dbroom)
             await session.commit()
 
-            dbroom = (await session.execute(select(DBRoom).where(DBRoom.id == room.id))).scalars().first()
+            dbroom = (await session.execute(select(DBRoom).where(DBRoom.id == dbroom.id))).scalars().first()
 
-            return cls._db_to_app_model(dbroom)
+            return dbroom.db_to_app_model()
         
     return DBRoomCRUD

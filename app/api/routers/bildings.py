@@ -6,7 +6,10 @@ from fastapi import APIRouter, Query, Request, UploadFile
 from api.security import auth_scheme, refresh_scheme, get_user_id
 from api.models import (
     BaseBuilding,
-    FullBuilding
+    FullBuilding,
+    FullUnit,
+    Floor,
+    FullRoom
     )
 from api.dependencies import (
     InitBuilding
@@ -35,7 +38,23 @@ async def post_units(building_schema: UploadFile) -> FullBuilding:
         geopointLT=building.geopointLT,
         geopointRB=building.geopointRB,
         schema=building.svg_schema,
-        unitIDs=building.unitIDs
+        units=[FullUnit(
+            unitID=u.unitID,
+            unitName=u.unitName,
+            unitDescription=u.unitDescription,
+            floors=[Floor(
+                floorID=f.floorID,
+                floorName=f.floorName,
+                floorSequence=f.floorSequence,
+                rooms=[FullRoom(
+                    roomID=r.roomID,
+                    roomName=r.romName,
+                    roomDescription=r.roomDescription,
+                    floorID=f.floorID,
+                    unitID=u.unitID
+                ) for r in f.rooms]
+            ) for f in u.floors]
+        ) for u in building.units]
     )
 
 

@@ -27,17 +27,20 @@ class RegUser(BaseUC):
     
     
     async def execute(self) -> User:
-        user = await self._user_crud.create_user(
+        user = User(
             userName=self.userName,
-            registerAt=datetime.now(),
-            userDescription=self.userDescription
+            userDescription=self.userDescription,
+            registerAt=datetime.now()
         )
+        user = await self._user_crud.save_user(user=user)
 
-        await self._auth_crud.create_auth_data(
+        auth_data = AuthData(
             userID=user.userID,
             email=self.email,
             password=self.password
         )
+
+        await self._auth_crud.save_auth_data(auth_data=auth_data)
 
         return user
 

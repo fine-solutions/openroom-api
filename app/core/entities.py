@@ -25,13 +25,48 @@ class UserExtraPermission(BaseModel):
 
 
 class User(BaseModel):
-    userID: int
+    userID: Optional[int] = None
     userName: str 
     userDescription: Optional[str] = None
     registerAt: datetime
-    extraPermissionIDs: List[int]
-    adminedRoomIDs: List[int]
-    availableRoomIDs: List[int]
+    extraPermissionIDs: Optional[List[int]] = None
+    adminedRoomIDs: Optional[List[int]] = None
+    availableRoomIDs: Optional[List[int]] = None
+
+
+
+class Room(BaseModel):
+    '''
+    Датакласс помещения
+    '''
+    roomID: int
+    romName: Optional[str] = 'Unnamed room'
+    roomDescription: Optional[str] = None
+    floorID: int
+
+
+
+class Floor(BaseModel):
+    '''
+    Датакласс помещения
+    '''
+    floorID: int
+    unitID: int
+    floorName: Optional[str] = None
+    floorSequence: int
+    rooms: list[Room]
+
+
+
+class Unit(BaseModel):
+    '''
+    Датакласс корпуса организации
+    '''
+    unitID: int 
+    buildingID: int
+    unitName: str
+    unitDescription: Optional[str] = None 
+    floors: list[Floor]
 
 
 
@@ -44,41 +79,8 @@ class Building(BaseModel):
     buildingDescription: Optional[str] = None
     geopointLT: str 
     geopointRB: str
-    unitIDs: list[int]
+    units: list[Unit]
     svg_schema: str 
-
-
-
-class Unit(BaseModel):
-    '''
-    Датакласс корпуса организации
-    '''
-    unitID: int 
-    unitName: str  
-    unitDescription: Optional[str] = None 
-    floorIDs: list[int]
-
-
-
-class Floor(BaseModel):
-    '''
-    Датакласс помещения
-    '''
-    floorID: int
-    floorName: Optional[str] = None
-    floorSequence: int
-    roomIDs: list[int]
-
-
-
-class Room(BaseModel):
-    '''
-    Датакласс помещения
-    '''
-    roomID: int
-    romName: Optional[str] = 'Unnamed room'
-    roomDescription: Optional[str] = None
-    floorID: int
 
 
 

@@ -19,6 +19,8 @@ from api.routers import (
     buildings_router
     )
 
+from config import conf
+
 
 
 @asynccontextmanager
@@ -56,4 +58,4 @@ async def mainpage():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", port=8000, log_level="debug", reload=True)
+    uvicorn.run("main:app", port=conf.API_PORT, log_level="debug", reload=True)

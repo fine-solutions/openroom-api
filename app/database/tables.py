@@ -4,6 +4,8 @@ from sqlalchemy import ReleaseSavepointClause, String, ForeignKey, Integer, Enum
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped, relationship
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
+from core import entities
+
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -73,6 +75,30 @@ class User(Base):
         back_populates="user"
     )
 
+    def db_to_app_model(self) -> entities.User:
+        '''
+        Преобразовать в сущность предметной области
+        '''
+        return entities.User(
+            userID=self.id,
+            userName=self.name,
+            userDescription=self.description,
+            registerAt=self.create_at,
+            extraPermissionIDs=[p.permission_id for p in self.permission_ids],
+            adminedRoomIDs=[r.room_id for r in self.admined_room_ids],
+            availableRoomIDs=[r.room_id for r in self.available_room_ids]
+        )
+    
+    @classmethod
+    def from_app_model(cls, model: entities.User) -> 'User':
+        '''
+        Собрать объект ORM на основе сущности предметной области
+        '''
+        return cls(
+            name=model.userName,
+            description=model.userDescription,
+            create_at=model.registerAt)
+
 
 
 class Permission(Base):
@@ -121,6 +147,20 @@ class AuthData(Base):
         back_populates="auth_data",
         lazy="joined"
     )
+
+    def db_to_app_model(self) -> entities.AuthData:
+            return entities.AuthData(
+                userID=self.user_id,
+                email=self.email,
+                password=self.password
+            )
+    
+    @classmethod
+    def from_app_model(cls, model: entities.AuthData) -> 'AuthData':
+        return cls(
+            user_id=model.userID,
+            email=model.email,
+            password=model.password)
 
 
 
@@ -181,6 +221,31 @@ class Building(Base):
         lazy="joined"
     )
 
+    def db_to_app_model(self) -> entities.Building:
+            return entities.Building(
+                buildingID=self.id,
+                buildingName=self.name,
+                buildingDescription=self.description,
+                units=[u.db_to_app_model() for u in self.units],
+                svg_schema=self.schema_uri,
+                geopointRB=self.geopoint_rb,
+                geopointLT=self.geopoint_lt
+            )
+    
+    @classmethod
+    def from_app_model(cls, model: entities.Building) -> 'Building':
+        '''
+        Собрать объект ORM на основе сущности предметной области
+        '''
+        return cls(
+            id=model.buildingID,
+            name=model.buildingName,
+            description=model.buildingDescription,
+            schema_uri=model.svg_schema,
+            geopoint_lt=model.geopointLT,
+            geopoint_rb=model.geopointRB,
+            units=[Unit.from_app_model(u) for u in model.units])
+
 
 
 class Unit(Base):
@@ -203,6 +268,28 @@ class Unit(Base):
     )
 
 
+    def db_to_app_model(self) -> entities.Unit:
+        return entities.Unit(
+            unitID=self.id,
+            buildingID=self.building_id,
+            unitName=self.name,
+            unitDescription=self.description,
+            floors=[f.db_to_app_model() for f in self.floors]
+        )
+    
+    @classmethod
+    def from_app_model(cls, model: entities.Unit) -> 'Unit':
+        '''
+        Собрать объект ORM на основе сущности предметной области
+        '''
+        return cls(
+            id=model.unitID,
+            name=model.unitName,
+            description=model.unitDescription,
+            building_id=model.buildingID,
+            floors=[Floor.from_app_model(f) for f in model.floors])
+
+
 
 class Floor(Base):
     __tablename__ = "floor"
@@ -222,6 +309,28 @@ class Floor(Base):
         back_populates="floor",
         lazy="joined"
     )
+
+
+    def db_to_app_model(self) -> entities.Floor:
+        return entities.Floor(
+            floorID=self.id,
+            unitID=self.unit_id,
+            floorName=self.name,
+            floorSequence=self.sequence,
+            rooms=[r.db_to_app_model() for r in self.rooms]
+        )
+    
+    @classmethod
+    def from_app_model(cls, model: entities.Floor) -> 'Floor':
+        '''
+        Собрать объект ORM на основе сущности предметной области
+        '''
+        return cls(
+            id=model.floorID,
+            name=model.floorName,
+            sequence=model.floorSequence,
+            unit_id=model.unitID,
+            rooms=[Room.from_app_model(r) for r in model.rooms])
 
 
 
@@ -257,6 +366,26 @@ class Room(Base):
         "Event",
         back_populates="room"
     )
+
+
+    def db_to_app_model(self) -> entities.Room:
+        return entities.Room(
+            roomID=self.id,
+            romName=self.name,
+            roomDescription=self.description,
+            floorID=self.floor_id
+        )
+    
+    @classmethod
+    def from_app_model(cls, model: entities.Room) -> 'Room':
+        '''
+        Собрать объект ORM на основе сущности предметной области
+        '''
+        return cls(
+            id=model.roomID,
+            name=model.romName,
+            description=model.roomDescription,
+            floor_id=model.floorID)
 
 
 

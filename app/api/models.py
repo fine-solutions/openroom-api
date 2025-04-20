@@ -76,6 +76,7 @@ class Floor(BaseModel):
     floorID: int
     floorSequence: int = Field(..., description='Порядковый номер этажа')
     floorName: Optional[str] = Field(None, description='Название этажа')
+    rooms: list[FullRoom]
 
 
 class BaseRoom(BaseModel):
@@ -120,10 +121,7 @@ class BaseUnit(BaseModel):
 
 class FullUnit(BaseUnit):
     unitID: int = Field(..., examples=[567])
-    roomIDs: Optional[List[int]] = Field(
-        None, description='ID помещений, находящихся в этом корпусе'
-    )
-    floorIDs: Optional[List[Floor]] = None
+    floors: List[Floor]
 
 
 class BaseBuilding(BaseModel):
@@ -135,7 +133,7 @@ class BaseBuilding(BaseModel):
 
 class FullBuilding(BaseBuilding):
     buildingID: int = Field(..., examples=[1])
-    unitIDs: list[int]
+    units: list[FullUnit]
     svg_schema: str = Field(
         ...,
         alias='schema',
