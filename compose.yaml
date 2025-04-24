@@ -1,0 +1,36 @@
+services:
+  app:
+    build: 
+      dockerfile: ./app.dockerfile
+    depends_on:
+      - database
+    env_file: ./.env
+    environment:
+      - DB_HOST=database
+    volumes:
+      - type: volume
+        source: files
+        target: /domain_files
+    networks:
+      - database
+    ports:
+      - 80:80
+  database:
+    image: postgres:15
+    env_file: ./.env
+    volumes:
+      - type: volume
+        source: db
+        target: /db_data
+    networks:
+      - database
+
+networks:
+  database:
+    driver: bridge
+
+volumes:
+  db:
+    name: openroom_database_volume
+  files:
+    name: openroom_file_storage_volume

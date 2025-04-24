@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Optional
 from abc import ABC, abstractmethod
 
+from h11 import Event
+
 from core.entities import Floor, User, AuthData, Building, Unit, Floor, Room
 
 
@@ -58,19 +60,19 @@ class IAuthCRUD(ABC):
 
 
 
-class IBuildingCRUD():
+class IBuildingCRUD(ABC):
 
     @abstractmethod
     async def save_building(self, building: Building) -> Building:
         pass
         
     @abstractmethod
-    async def get_building_by_id(building_id: int) -> Building:
+    async def get_building_by_id(self, building_id: int) -> Building:
         pass
 
 
 
-class IUnitCRUD():
+class IUnitCRUD(ABC):
 
     @abstractmethod
     async def save_unit(self, unit: Unit) -> Unit:
@@ -78,7 +80,7 @@ class IUnitCRUD():
 
 
 
-class IFloorCRUD():
+class IFloorCRUD(ABC):
 
     @abstractmethod
     async def save_floor(self, floor: Floor) -> Floor:
@@ -86,8 +88,16 @@ class IFloorCRUD():
 
 
 
-class IRoomCRUD():
+class IRoomCRUD(ABC):
 
     @abstractmethod
     async def save_room(self, room: Room) -> Room:
+        pass
+
+
+
+class IEventCRUD(ABC):
+
+    @abstractmethod
+    async def save_event(self, event: Event) -> Event:
         pass

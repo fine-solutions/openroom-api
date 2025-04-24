@@ -12,7 +12,8 @@ from api.models import (
     FullRoom
     )
 from api.dependencies import (
-    InitBuilding
+    InitBuilding,
+    GetBuilding
 )
 
 
@@ -25,7 +26,7 @@ buildings_router = APIRouter(
 
 
 @buildings_router.post('/', response_model=None)
-async def post_units(building_schema: UploadFile) -> FullBuilding:
+async def post_building(building_schema: UploadFile) -> FullBuilding:
     """
     Добавить в систему строение
     """
@@ -58,16 +59,50 @@ async def post_units(building_schema: UploadFile) -> FullBuilding:
     )
 
 
-@buildings_router.get('/{building_id}', response_model=FullBuilding)
-async def post_units(building_id: int) -> FullBuilding:
+@buildings_router.get('/', response_model=FullBuilding)
+async def get_buildings() -> FullBuilding:
     """
-    Получить строение по ID
+    Получить список строений
     """
     pass
 
 
+@buildings_router.get('/{building_id}', response_model=FullBuilding)
+async def get_building(building_id: int) -> FullBuilding:
+    """
+    Получить строение по ID
+    """
+    uc = GetBuilding(building_id=building_id)
+    building = await uc.execute()
+    return FullBuilding(
+        buildingID=building.buildingID,
+        buildingName=building.buildingName,
+        buildingDescription=building.buildingDescription,
+        geopointLT=building.geopointLT,
+        geopointRB=building.geopointRB,
+        schema=building.svg_schema,
+        units=[FullUnit(
+            unitID=u.unitID,
+            unitName=u.unitName,
+            unitDescription=u.unitDescription,
+            floors=[Floor(
+                floorID=f.floorID,
+                floorName=f.floorName,
+                floorSequence=f.floorSequence,
+                rooms=[FullRoom(
+                    roomID=r.roomID,
+                    roomName=r.romName,
+                    roomDescription=r.roomDescription,
+                    floorID=f.floorID,
+                    unitID=u.unitID
+                ) for r in f.rooms]
+            ) for f in u.floors]
+        ) for u in building.units]
+    )
+
+
 @buildings_router.put('/{building_id}', response_model=FullBuilding)
-async def post_units(building_id: int, body: BaseBuilding) -> FullBuilding:
+async def put_building(building_id: int, body: BaseBuilding) -> FullBuilding:
     """
     Изменить строение по ID
     """

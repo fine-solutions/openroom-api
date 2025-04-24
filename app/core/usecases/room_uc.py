@@ -95,3 +95,20 @@ class InitBuilding(BaseUC):
         building = await self._building_crud.get_building_by_id(building_id=building.buildingID)
         
         return building
+
+
+
+class GetBuilding(BaseUC):
+    building_id: int
+    _building_crud: IBuildingCRUD
+
+    @classmethod
+    def set_dependencies(cls, building_crud: IBuildingCRUD) -> 'GetBuilding':
+        cls._building_crud: IBuildingCRUD = building_crud
+        return cls
+    
+
+    async def execute(self) -> Building:
+        building = await self._building_crud.get_building_by_id(building_id=self.building_id)
+        
+        return building

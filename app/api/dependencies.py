@@ -5,7 +5,8 @@ from core.usecases import (
     GetJWTSubject,
     GetUser,
     EditUser,
-    InitBuilding
+    InitBuilding,
+    GetBuilding
 )
 
 from adapters import (
@@ -39,7 +40,7 @@ unit_crud = get_DBUnit_CRUD(db_manager)
 floor_crud = get_DBFloor_CRUD(db_manager)
 room_crud = get_DBRoom_CRUD(db_manager)
 
-file_torage = OsFileStorage('D:\VSU\Diplom\openroom-api\store')
+file_torage = OsFileStorage(conf.FILE_STORE_PATH)
 
 
 RegUser.set_dependencies(user_crud=user_crud, auth_crud=auth_crud)
@@ -51,3 +52,4 @@ UserLoginRefresh.set_dependencies(auth_crud=auth_crud, jwt_manager=jwt_manager)
 GetJWTSubject.set_dependencies(auth_crud=auth_crud, jwt_manager=jwt_manager)
 
 InitBuilding.set_dependencies(building_crud=building_crud, unit_crud=unit_crud, floor_crud=floor_crud, room_crud=room_crud, file_storage=file_torage)
+GetBuilding.set_dependencies(building_crud=building_crud)

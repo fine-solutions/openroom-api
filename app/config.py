@@ -1,4 +1,4 @@
-from os import path
+from os import path, environ
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
 
@@ -7,7 +7,7 @@ from pydantic import Field
 class Config(BaseSettings):
     DB_USER: str = Field(alias='POSTGRES_USER')
     DB_PASSWORD: str = Field(alias='POSTGRES_PASSWORD')
-    DB_HOST: str
+    DB_HOST: str = Field(default=environ.get('DB_HOST'))
     DB_PORT: int
     DB_NAME: str = Field(alias='POSTGRES_DB')
 
@@ -17,7 +17,9 @@ class Config(BaseSettings):
 
     API_PORT: int
 
-    model_config = SettingsConfigDict(env_file=path.abspath(__file__).replace('config.py', '.env'))
+    FILE_STORE_PATH: str
+
+    model_config = SettingsConfigDict(env_file=path.abspath(__file__).replace('config.py', '.env'), extra='ignore')
 
     def get_db_url(self) -> str:
         return f'postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}'
